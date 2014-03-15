@@ -15,22 +15,24 @@
     <title>WHY wordsharer by whoisterencelee</title>
   </head>
 
-  <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="AjaxRequest.get({url:'http://wordsharer.com/why.md',onSuccess:function(req){R=req;md=R.responseText;}});false">
+  <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="C=document.getElementById('content');AjaxRequest.get({url:'http://wordsharer.com/why.md',onSuccess:function(req){R=req;md=R.responseText;C.innerHTML=marked(md);}});false">
 	<div style="float:left;width:20%;">
 		<div style="position:fixed;top:10px;left:10px;">
 			<a href="https://github.com/whoisterencelee/wordsharer.com">wordsharer</a>
 			<br />
-			<button>commit</button>
+			<button>commit</button><br/>
+			<button onclick="C.innerHTML=marked(C.innerHTML);false">markup</button>
 			<!--fix function area-->
 		</div>
 		<br /><br />
 		<!--scroll area-->
 	</div>
-	<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true">
-		<section>
-		Content is inline editable
-		</section>
-	</div>
+<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true">
+Content is inline editable<br />
+Feel free to use Markdown here<br />
+TODO: save local version with localStorage<br />
+When you commit you are actually making a fork and pull request<br />
+</div>
 	<div style="outline-style:none;" contenteditable="true">
 		<p style="text-align:right;">Annotations</p>
 	</div>
