@@ -16,25 +16,42 @@
   </head>
 
   <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="C=document.getElementById('content');AjaxRequest.get({url:'http://wordsharer.com/why.md',onSuccess:function(req){R=req;md=R.responseText;C.innerHTML=marked(md);}});false">
+	<!-- FIXED LEFT SIDE -->
 	<div style="float:left;width:20%;">
-		<div style="position:fixed;top:10px;left:10px;">
+		<div style="position:fixed;top:10px;left:10px;width:15%;">
 			<a href="https://github.com/whoisterencelee/wordsharer.com">wordsharer</a>
 			<br />
-			<button>commit</button><br/>
-			<button onclick="C.innerHTML=marked(C.innerHTML);false">markup</button>
+			<button>commit</button>
+			<br /><button onclick="C.innerHTML=marked(C.innerHTML);false">markdn</button> <a href="https://help.github.com/articles/github-flavored-markdown">...</a>
 			<!--fix function area-->
+			<br />
+			<ul style="font-size:small;">
+			<li>Please <b>only append</b> and not remove anything at the moment,</li>
+			<li>use ~~<strike>strikeover</strike>~~ to mark deletion</li>
+			<!--TODO: implement append only function-->
+			</ul>
 		</div>
 		<br /><br />
 		<!--scroll area-->
 	</div>
+	
+	<!-- CONTENT -->
+
 <div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true">
 Content is inline editable<br />
-Feel free to use Markdown here<br />
+Feel free to write HTML/Markdown here and use <button>markdn</button> on the left<br />
 TODO: save local version with localStorage<br />
 When you commit you are actually making a fork and pull request<br />
+TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js, zenpen<br />
 </div>
-	<div style="outline-style:none;" contenteditable="true">
-		<p style="text-align:right;">Annotations</p>
+
+	<!-- ANNOTATION -->
+
+	<div id="annotation" style="float:left;width:20%;outline-style:none;" contenteditable="true">
+		<p style="margin:0px;text-align:right;">Annotations<br />
+		<div style="text-align:right;font-size:small;">comments that are not part of content</div>
+		</p>
+		<!--Another markdown, but with each p tag position based on content p position, need a top attribute that adjust based on top of p in content :TODO-->
 	</div>
         
   </body>
