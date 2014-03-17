@@ -1,6 +1,6 @@
 <p>The problem I have with blogging or publishing my ideas are two folds, and they kinda feed into each other:</p>
 <p><strong>Speed</strong> - not the actual writing down of the idea, but the reformating, rewording, etc
-Conciseness - quality of the writing, does the writing convey the idea properly, easy to understand, keep people reading… etc</p><p>Propagation - how to get the idea to the right audience, going thur the network<br></p>
+<strong>Conciseness</strong> - quality of the writing, does the writing convey the idea properly, easy to understand, keep people reading… etc</p><p><strong>Propagation</strong> - how to get the idea to the right audience, going thur the network<br></p>
 <p>In another word, going from raw idea to something I can share/blog as fast as possible and not embrass myself, haha.
 Kinda like how an idea starts with one speaking about it, and by conversing with small number of people first, the idea gets expanded/ refined/ rejected and eventually the idea can be presented.</p>
 <p>Similarily we can start with some raw text, then the refinement starts by corresponding with small number of friends first.
