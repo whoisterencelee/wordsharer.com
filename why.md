@@ -7,5 +7,5 @@ Kinda like how an idea starts with one speaking about it, and by conversing with
 I believe this is already the workflow of most serious bloggers, but how to bring the process to casual people like myself, because everyone’s got an idea that just waiting to be shared to a wider audience if they feel comfortable about sharing it. Everyone should have the right to define one’s own idea on the web and build an idea profile.</p>
 <p>So what’s the idea?
 Everyone can write emails, and it’s already quiet good for the first part of the refinement process, namely sharing the first raw draft with a few friends; but then there seems to be a big gap to transform that into something that can attract more attention something like a blog.</p>
-<p>and also help it propagates.
+<p><del>and also help it propagates.</del>
 What if propagating the writing gives some reward to the distributor? I wouldn’t mind if people who spread my ideas get their names added (like a co-author), matter of fact, a “sharer” has as much contribution as the writer, because it helps the idea propagates to the right target.</p>
