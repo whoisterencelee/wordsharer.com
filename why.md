@@ -1,6 +1,23 @@
-<p>The problem I have with blogging or publishing my ideas are two folds, and they kinda feed into each other:</p>
-<p><strong>Speed</strong> - not the actual writing down of the idea, but the reformating, rewording, etc
-<strong>Conciseness</strong> - quality of the writing, does the writing convey the idea properly, easy to understand, keep people reading… etc</p><p><strong>Propagation</strong> - how to get the idea to the right audience, going thur the network<br></p>
+<h1>how to use this?</h1>
+<p>Content is inline editable</p>
+<p>Feel free to write HTML/Markdown here and use <button>markdn</button> on the left</p>
+<p>Basic features that should be implemented:</p>
+<ul>
+<li>use git log as input to sharejs for operational transform</li>
+<li>all deleteions should be treated as strikeover, no information is ever removed</li>
+<li>edit Oauth token should be in url query not in code, also content.md</li>
+<li>save local version with localStorage, to prevent lost of unsaved content</li>
+<li>Mouse highlighting to be implemented later with github.com/pen , grande.js, zenpen</li>
+</ul>
+<p>Some roadblocks I haven't quite figured out yet</p>
+<ul>
+<li>there is no access control to different files/articles in the repo, or even to other public repo, seems this is not a git concept?  I suppose people are suppose to fork a private repo and then make pull request to your private repo, but doesn't really work well in wordsharer way, too much friction</li>
+</ul>
+<h1>Why I am looking for this?</h1>
+<p>The problem I have with blogging or publishing my ideas are three folds, and they kinda feed into each other:</p>
+<p><strong>Speed</strong> - not the actual writing down of the idea, but the reformating, rewording, etc</p>
+<p><strong>Conciseness</strong> - quality of the writing, does the writing convey the idea properly, easy to understand, keep people reading… etc</p>
+<p><strong>Propagation</strong> - how to get the idea to the right audience, going thur the network<br></p>
 <p>In another word, going from raw idea to something I can share/blog as fast as possible and not embrass myself, haha.
 Kinda like how an idea starts with one speaking about it, and by conversing with small number of people first, the idea gets expanded/ refined/ rejected and eventually the idea can be presented.</p>
 <p>Similarily we can start with some raw text, then the refinement starts by corresponding with small number of friends first.
