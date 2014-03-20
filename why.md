@@ -1,17 +1,17 @@
-<h1>how to use this?</h1>
+<p></p><h1>How to use this?</h1><p></p>
 <p>Content is inline editable</p>
 <p>Feel free to write HTML/Markdown here and use <button>markdn</button> on the left</p>
 <p>Basic features that should be implemented:</p>
 <ul>
-<li>use git log as input to sharejs for operational transform</li>
-<li>all deleteions should be treated as strikeover, no information is ever removed</li>
+<li>use git log as input to <del>sharejs (needs a running server)</del> for operational transform</li><li>&nbsp; maybe need to use html diff<br></li>
+<li>all deletions should be treated as strikeover, no information is ever removed</li>
 <li>edit Oauth token should be in url query not in code, also content.md</li>
 <li>save local version with localStorage, to prevent lost of unsaved content</li>
 <li>Mouse highlighting to be implemented later with github.com/pen , grande.js, zenpen</li>
 </ul>
 <p>Some roadblocks I haven't quite figured out yet</p>
 <ul>
-<li>there is no access control to different files/articles in the repo, or even to other public repo, seems this is not a git concept?  I suppose people are suppose to fork a private repo and then make pull request to your private repo, but doesn't really work well in wordsharer way, too much friction</li>
+<li>there is no access control to different files/articles in the repo, or even to other public repo, seems this is not a git concept?  I suppose people are suppose to fork a private repo and then make pull request to your private repo, but doesn't really work well in wordsharer way, it means contributor has to login to github... too much friction?<br></li>
 </ul>
 <h1>Why I am looking for this?</h1>
 <p>The problem I have with blogging or publishing my ideas are three folds, and they kinda feed into each other:</p>
