@@ -15,7 +15,15 @@ function wordsharer(words){
 	gh=new Github({auth:'oauth',token:'b93365cb0876e6bf85728f3a10e2bab3384d428a'});//give personal access to repo, well repo is public anyways
 	repo=gh.getRepo('whoisterencelee','wordsharer.com');
 	C=document.getElementById('content');
-	getWords(words,function(text){C.innerHTML=text;});
+	W=words;
+	getWords(W,function(e,text){
+		if(e)C.innerHTML=e;
+		else C.innerHTML=text;
+	});
+
+	D=new htmlDiff;
+	D.clearHash();  //needed, initial html tag hash stores
+	
 }
 
 function save(){
@@ -47,7 +55,7 @@ var ORIGHTML="";
 function getWords(file,cb){
 
 	//get last commit for file
-	repo.getCommits({path:file,sha:"heads/gh-pages"},function(e,commits){
+	repo.getCommits({path:file,sha:"heads/gh-pages",per_page:1},function(e,commits){
 		if(e)return cb(errorlog("Unable to find last commit for "+file,e));
 		var lastcommit=commits[0];
 
@@ -60,16 +68,20 @@ function getWords(file,cb){
 		repo.req("GET",lastcommit.commit.tree.url,null,function(e,tree){
 			if(e)return cb(errorlog("Unable to find tree for commit "+lastcommit.sha,e));
 			
-			var blobobj = _.select(tree, function(fileobj){return fileobj.path === file;})[0];
+			var blobobj = _.select(tree.tree, function(fileobj){return fileobj.path === file;})[0];
 
 			repo.req("GET",blobobj.url,null,function(e,filecontent){
 				if(e)return cb(errorlog("Unable to get file content of "+file+" @ commit "+lastcommit.sha,e));
 				
 				//put md thur markdown, because we are only working with HTML
-				//save html as original version
+				marked(filecontent,function(e,htmltext){
+					if(e)return cb(errorlog("Unable to translate markdown/html to html ",e),null);
 
-				ORIGHTML=marked(filecontent);
-				cb(null,ORIGHTML);
+					//save html as original version
+					ORIGHTML=htmltext;
+
+					cb(null,ORIGHTML);
+				});
 
 			},'raw');
 		});
@@ -77,8 +89,13 @@ function getWords(file,cb){
 }
 
 function merge(){
+
 	//merge original into current to re-instate deleted
+	var M=D.diff(ORIGHTML,C.innerHTML);
+
 	//getWords and merge in
+	//getWords(W,);
+
 	//insert time modify attribute to all ins and del that doesn't already have this attribute
 }
 
