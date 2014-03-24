@@ -1,3 +1,6 @@
 [submodule "github"]
 	path = github
 	url = https://github.com/whoisterencelee/github.git
+[submodule "htmlDiff"]
+	path = htmlDiff
+	url = ./htmlDiff

@@ -10,16 +10,18 @@
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <script src="./AjaxRequest.js"></script>
     <script src="./marked.js"></script>
     <script src="./github/lib/base64.js"></script>
     <script src="./github/lib/underscore-min.js"></script>
     <script src="./github/github.js"></script>
+    <script src="./htmlDiff/diff_match_patch.js"></script>
+    <script src="./htmlDiff/htmlDiff.js"></script>
     <script src="./wordsharer.js"></script>
     <title>WHY wordsharer by whoisterencelee</title>
   </head>
 
-  <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="C=document.getElementById('content');AjaxRequest.get({url:'http://wordsharer.com/why.md',onSuccess:function(req){R=req;md=R.responseText;C.innerHTML=marked(md);}});false">
+  <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="wordsharer('why.md');false">
+
 	<!-- FIXED LEFT SIDE -->
 	<div style="float:left;width:20%;">
 		<div style="position:fixed;top:10px;left:10px;width:15%;">
