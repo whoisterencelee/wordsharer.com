@@ -22,7 +22,7 @@ function wordsharer(words){
 	});
 
 	D=new htmlDiff;
-	D.clearHash();  //needed, initial html tag hash stores
+	D.clearHash();  //needed, initialize html tag hash stores
 	
 }
 
@@ -59,8 +59,8 @@ function getWords(file,cb){
 		if(e)return cb(errorlog("Unable to find last commit for "+file,e));
 		var lastcommit=commits[0];
 
-		//compare last commit sha with DOCHEAD if different/none than continue
-		if(lastcommit.sha==DOCHEAD)return ORIGHTML;
+		//compare last commit sha with DOCHEAD if same return false, so won't trigger errorlogs and can test for sameness
+		if(lastcommit.sha==DOCHEAD)return cb(false,ORIGHTML);
 
 		DOCHEAD=lastcommit.sha;
 		
@@ -88,15 +88,37 @@ function getWords(file,cb){
 	});
 }
 
-function merge(){
+function mergeWords(){
 
-	//merge original into current to re-instate deleted
-	var M=D.diff(ORIGHTML,C.innerHTML);
+	//2.5 way merge
 
-	//getWords and merge in
-	//getWords(W,);
+	//convert any markdown first
+	marked(C.innerHTML,function(e,newhtml){
+		if(e){
+			alert("The edits you entered caused a problem during markdown->html conversion, changes not submitted");
+			return;
+		}
 
-	//insert time modify attribute to all ins and del that doesn't already have this attribute
+		//first merge original into current to see mark what's changed with <ins> <del> and re-instate deleted text
+		//everyone does this so merging other's work later won't need to do this, this is what I mean by 2.5 way
+		var M1=D.diff(ORIGHTML,newhtml);
+
+		//getWords and merge in
+		getWords(W,function(change,latest){
+			if(change){alert("ERROR: Cannot merge latest in, changes not submitted "+change);return;}
+
+			if(change===false)M2=M1;//no change, no need to diff
+			else M2=D.diff(latest,M1,{tagless:true});//tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
+
+			C.innerHTML=M2;//display it to user anyways, because there might be new updates
+			ORIGHTML=M2;//needed this if there's above line, because even if below fails, you might merge again, and you don't want to double mark your changes
+
+			//write commit
+			save();//TODO to be replace with atomic commit
+		});
+
+		//insert time modify attribute to all ins and del that doesn't already have this attribute
+	});
 }
 
 function errorlog(heading,details){
