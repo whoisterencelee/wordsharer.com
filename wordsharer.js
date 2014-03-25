@@ -10,29 +10,38 @@
 // htmlDiff		https://github.com/cosmiclattes/htmlDiff.git
 //  google-diff-match-patch
 
-function wordsharer(words){
+function wordsharer(words,options){
+	opt={store_human_readable_html:true};// defaults
+	for(var o in options){opt[o]=options[o];};
 
 	gh=new Github({auth:'oauth',token:'b93365cb0876e6bf85728f3a10e2bab3384d428a'});//give personal access to repo, well repo is public anyways
 	repo=gh.getRepo('whoisterencelee','wordsharer.com');
 	C=document.getElementById('content');
+	CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in markup
 	W=words;
 	U='.//'+W;
 
 	D=new htmlDiff;
 	D.clearHash();  // needed, initialize html tag hash stores
 
+	if(opt.store_human_readable_html){
+		markup=function(html,node){
+			if(typeof node=='undefined')node=CC;
+			node.innerHTML=html;// follow with innerHTML transform
+			return node.innerHTML;// return html flavor based on displayable non-escaped html
+		};
+	}else{
+		markup=function(html,node){
+			if(typeof node=='object')node.innerHTML=html;// for display only
+			return html; // return html flavor based on escaped HTML output
+		};
+	}
+
 	// borrow repo.req to quickly load the content first, not worry about atomic commits
 	repo.req('GET',U,null,function(e,text){
 		if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
 	
-		// IS THIS WRONG? because different browser might handle innerHTML differently
-		C.innerHTML=marked(text);// always markup first, follow with innerHTML transform
-		ORIGHTML=C.innerHTML;// always save displayable html
-		// if we use this we need to use a dummy html node to do innerHTML transformation when we're saving ORIGHTML and not displaying
-		*/
-
-		ORIGHTML=marked(text);// save reference based on a single output
-		C.innerHTML=ORIGHTML;// for display only
+		ORIGHTML=markup(marked(text),C);
 
 		mergeWords();// setup atomic read / write
 
@@ -69,7 +78,7 @@ function getWords(file,cb){
 					if(e)return cb(errorlog("Unable to translate markdown/html to html ",e),null);
 
 					//save html as original version
-					ORIGHTML=htmltext;
+					ORIGHTML=markup(htmltext);//borrow CC innerHTML because we don't necessary display htmltext, but might need to transform
 
 					cb(null,ORIGHTML);
 				});
@@ -92,7 +101,9 @@ function mergeWords(cb){
 
 		//first merge original into current to see mark what's changed with <ins> <del> and re-instate deleted text
 		//everyone does this so merging other's work later won't need to do this, this is what I mean by 2.5 way
-		var M2=D.diff(ORIGHTML,M1);
+		var M2=D.diff(ORIGHTML,markup(M1));
+		
+		//TODO attempt to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
 
 		//getWords and merge in
 		getWords(W,function(change,latest){
@@ -101,10 +112,9 @@ function mergeWords(cb){
 			if(change===false)M3=M2;//no change, no need to diff
 			else M3=D.diff(latest,M2,{tagless:true});//tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
 
-			ORIGHTML=M3;//needed this if there's below line, because even if below fails, you might merge again, and you don't want to double mark your changes
-			C.innerHTML=M3;//display it to user anyways, because there might be new updates
+			ORIGHTML=markup(M3,C);// needed this because even if below fails, you might merge again, and you don't want to double mark your changes
 
-			if(typeof cb=='function')cb();
+			if(typeof cb=='function')cb(null,ORIGHTML);
 
 		});
 
@@ -115,7 +125,7 @@ function mergeWords(cb){
 function submitWords(){
 
 	mergeWords(function(){
-		repo.write('gh-pages','why.md',marked(C.innerHTML),"commit changes to why.md",function(err){console.log(err)});
+		repo.write('gh-pages','why.md',markup(marked(C.innerHTML)),"commit changes to why.md",function(err){console.log(err)});
 	});
 
 	//OT version
