@@ -29,7 +29,7 @@ function wordsharer(words,options){
 			if(typeof node=='object')node.innerHTML=html;// for display only
 			return html; // return html flavor based on escaped HTML output
 		};
-	}elseif(opt.repairHTML==1){ //use browser innerHTML
+	}else if(opt.repairHTML==1){ //use browser innerHTML
 		repairHTML=function(html,node){
 			if(typeof node=='undefined')node=CC;
 			node.innerHTML=html;// follow with innerHTML transform
