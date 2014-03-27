@@ -44,7 +44,7 @@ function wordsharer(words,options){
 	};
 
 	// borrow repo.req to quickly load the content first, not worry about atomic commits
-	repo.req('GET',U,null,function(e,text){
+	repo.req('POST',U,null,function(e,text){
 		if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
 	
 		STAGED=repairHTML(marked(text),C);
