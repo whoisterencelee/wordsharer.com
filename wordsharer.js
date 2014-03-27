@@ -19,7 +19,7 @@ function wordsharer(words,options){
 	C=document.getElementById('content');
 	CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
 	W=words;
-	U='.//'+W;
+	U='.//'+W;// allows offline file load
 
 	D=new htmlDiff;
 	D.clearHash();  // needed, initialize html tag hash stores
@@ -47,7 +47,7 @@ function wordsharer(words,options){
 	repo.req('GET',U,null,function(e,text){
 		if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
 	
-		ORIGHTML=repairHTML(marked(text),C);
+		STAGED=repairHTML(marked(text),C);
 
 		mergeWords();// setup atomic read / write
 
@@ -56,7 +56,7 @@ function wordsharer(words,options){
 }
 
 var DOCHEAD="";
-var ORIGHTML="";
+var STAGED="";
 
 function getWords(file,cb){
 
@@ -66,7 +66,7 @@ function getWords(file,cb){
 		var lastcommit=commits[0];
 
 		//compare last commit sha with DOCHEAD if same return false, so won't trigger errorlogs and can test for sameness
-		if(lastcommit.sha==DOCHEAD)return cb(false,ORIGHTML);
+		if(lastcommit.sha==DOCHEAD)return cb(false,STAGED);
 
 		DOCHEAD=lastcommit.sha;
 		
@@ -80,13 +80,11 @@ function getWords(file,cb){
 				if(e)return cb(errorlog("Unable to get file content of "+file+" @ commit "+lastcommit.sha,e));
 				
 				//put md thur markdown, because we are only working with HTML
-				marked(filecontent,function(e,htmltext){
+				marked(filecontent,function(e,markup){
 					if(e)return cb(errorlog("Unable to translate markdown/html to html ",e),null);
 
-					//save html as original version
-					ORIGHTML=repairHTML(htmltext);//borrow CC innerHTML because we don't necessary display htmltext, but might need to transform
+					cb(null,repairHTML(markup));
 
-					cb(null,ORIGHTML);
 				});
 
 			},'raw');
@@ -96,31 +94,38 @@ function getWords(file,cb){
 
 function mergeWords(cb){
 
-	//2.5 way merge
+	//2.5 way merge, there is only append no delete
+
+	C.contenteditable=false;// lock up, when ever we are going to modify C, otherwise the user might see their modification disappear
 
 	//convert any markdown first
-	marked(C.innerHTML,function(e,M1){
+	marked(C.innerHTML,function(e,MODIFIED){
 		if(e){
-			alert("The edits you entered caused a problem during markdown->html conversion, changes not submitted : "+e);
+			C.contenteditable=true;// unlock
+			alert("The edits you entered caused a problem during markdown->html conversion, operation aborted : "+e);
 			return;
 		}
 
-		//first merge original into current to see mark what's changed with <ins> <del> and re-instate deleted text
-		//everyone does this so merging other's work later won't need to do this, this is what I mean by 2.5 way
-		var M2=D.diff(ORIGHTML,repairHTML(M1));
+		// first diff last STAGED with modified to mark what's changed with <ins> <del> and re-instate deleted text
+		// need MODIFIED to go thur the same process as STAGED so it as close as possible before diff, 
+		STAGED=repairHTML(D.diff(STAGED,repairHTML(MODIFIED)),C);
 		
 		//TODO modify htmlDIFF to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
 
 		//getWords and merge in
-		getWords(W,function(change,latest){
-			if(change){alert("ERROR: Cannot merge latest in, changes not submitted "+change);return;}
+		getWords(W,function(change,REMOTE){
+			if(change){
+				C.contenteditable=true;// unlock
+				alert("ERROR: Cannot merge REMOTE in. "+change);
+				return;
+			}
 
-			if(change===false)M3=M2;//no change, no need to diff
-			else M3=D.diff(latest,M2,{tagless:true});//tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
+			if(change!=false)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
+			//otherwise STAGED is already the latest
 
-			ORIGHTML=repairHTML(M3,C);// needed this because even if below fails, you might merge again, and you don't want to double mark your changes
+			C.contenteditable=true;// unlock
 
-			if(typeof cb=='function')cb(null,ORIGHTML);
+			if(typeof cb=='function')cb(null,STAGED);
 
 		});
 
@@ -130,9 +135,20 @@ function mergeWords(cb){
 
 function submitWords(){
 
+	// lock submit button
+	// write message which is only generated once
+
 	mergeWords(function(){
-		repo.write('gh-pages','why.md',repairHTML(marked(C.innerHTML)),"commit changes to why.md",function(err){console.log(err)});
+
+		repo.write('gh-pages','why.md',STAGED,"commit changes to "+W+" using wordsharer",function(err){console.log(err)});
+
+		// post blob first
+			// build/post tree
+			
+		// get REPOHEAD not DOCHEAD
+			// don't save REPOHEAD as DOCHEAD, it would mean an extra mergeWords, but the extra work makes sure you really have the latest
 	});
+
 
 	//OT version
 	//diff the original md with current to get the client insert operation(s)
