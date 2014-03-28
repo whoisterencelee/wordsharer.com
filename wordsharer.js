@@ -103,7 +103,7 @@ function mergeWords(cb){
 		if(e){
 			C.contentEditable=true;// unlock
 			alert("The edits you entered caused a problem during markdown->html conversion, operation aborted : "+e);
-			return;
+			return cb(e);
 		}
 
 		// first diff last STAGED with modified to mark what's changed with <ins> <del> and re-instate deleted text
@@ -113,19 +113,19 @@ function mergeWords(cb){
 		//TODO modify htmlDIFF to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
 
 		//getWords and merge in
-		getWords(W,function(change,REMOTE){
-			if(change){
+		getWords(W,function(pull,REMOTE){
+			if(pull){
 				C.contentEditable=true;// unlock
-				alert("ERROR: Cannot merge REMOTE in. "+change);
-				return;
+				alert("ERROR: Cannot merge REMOTE in. "+pull);
+				return cb(pull);
 			}
 
-			if(change!=false)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
+			if(pull!=false)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
 			//otherwise STAGED is already the latest
 
 			C.contentEditable=true;// unlock
 
-			if(typeof cb=='function')cb(null,STAGED);
+			if(typeof cb=='function')cb(pull,STAGED);
 
 		});
 
@@ -136,17 +136,24 @@ function mergeWords(cb){
 function submitWords(){
 
 	// lock submit button
-	// write message which is only generated once
+	// write commit message which is only generated once
 
-	mergeWords(function(){
+	mergeWords(function(pulled,newhtml){
 
-		repo.write('gh-pages','why.md',STAGED,"commit changes to "+W+" using wordsharer",function(err){console.log(err)});
+		repo.postBlob(newhtml,function(e,blob){
+			if(e){errorlog("submitWords",e);return;};
 
-		// post blob first
-			// build/post tree
+		});
+		// build/post tree
 			
 		// get REPOHEAD not DOCHEAD
+		repo.getRef("heads/gh-pages",function(e,sha){
+			if(e){errorlog("ERROR: submitWords : "+e);return;};
+			REPOHEAD=sha;
+			repo.updateTree(REPOHEAD,W,blob,function(e,tree){
+			
 			// don't save REPOHEAD as DOCHEAD, it would mean an extra mergeWords, but the extra work makes sure you really have the latest
+		});
 	});
 
 
@@ -163,7 +170,14 @@ function submitWords(){
 		//otherwise try from grab the 
 }
 
+function publishWords(){
+	//TODO should sanitize C.innerHTML first
+	var validhtml="<!DOCTYPE html><html><head></head>"+C.innerHTML+"</html>";
+	repo.write('gh-pages','why-published.html',validhtml,"publish "+W+" to "+W+".html using wordsharer",function(){});
+}
+
 function errorlog(heading,details){
-	console.log("ERROR: "+heading+" : "+details);
-	return "<H1>"+heading+"</H1><P>"+details+"</P>";
+	var s="ERROR: "+heading+" : "+details;
+	console.log(s);
+	return s;
 }
