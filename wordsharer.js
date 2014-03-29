@@ -55,22 +55,26 @@ function wordsharer(words,options){
 
 }
 
+var HEAD="";
 var DOCSHA="";
 var STAGED="";
 
 function getWords(file,cb){
 	// this function can provide async so calling functions wont have to
 
-	repo.getSha('gh-pages',file, function(e,sha){
-		if(e){return cb(errorlog("getWords","unable to get file "+file+" from branch gh-pages"),STAGED);}
-		var pulled=null;// tristate: (1) null (pulled) or (2) false (not pulled) or (3) true/string (error)
-		if(sha==DOCSHA){pulled=false;return cb(pulled,STAGED);}
-		DOCSHA=sha;
-		repo.getBlob(sha,function(e,filecontent){
-			if(e){return cb(errorlog("getWords","unable to get filecontent from "+sha),STAGED);}
-			marked(filecontent,function(e,markup){// put md thur markdown, because we are only working with HTML
-				if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
-				cb(pulled,repairHTML(markup));
+	repo.getRef("heads/gh-pages", function(e,head){
+		HEAD=head;
+		repo.getSha(HEAD, file, function(e,sha){
+			if(e){return cb(errorlog("getWords","unable to get file "+file+" from branch gh-pages"),STAGED);}
+			var pulled=null;// tristate: (1) null (pulled) or (2) false (not pulled) or (3) true/string (error)
+			if(sha==DOCSHA){pulled=false;return cb(pulled,STAGED);}
+			DOCSHA=sha;
+			repo.getBlob(sha,function(e,filecontent){
+				if(e){return cb(errorlog("getWords","unable to get filecontent from "+sha),STAGED);}
+				marked(filecontent,function(e,markup){// put md thur markdown, because we are only working with HTML
+					if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
+					cb(pulled,repairHTML(markup));
+				});
 			});
 		});
 	});
@@ -120,7 +124,6 @@ function mergeWords(cb){
 }
 
 MAXRETRIES=4;
-REPOHEAD="";
 
 function submitWords(retries){
 	if(typeof retries=='undefined')retries=MAXRETRIES;
@@ -135,25 +138,17 @@ function submitWords(retries){
 
 	// lock submit button
 	// write commit message which is only generated once
+	var message="submitted new words to "+W;
 
 	mergeWords(function(e,newwords){
-
 		repo.postBlob(newwords,function(e,blob){
-			if(e){return cb(errorlog("submitWords",e);return;};
-
-			repo.updateTree(HEAD,W,blob,function(e,tree){
-				if(e){return cb(errorlog("submitWords",e);return;};
-
-				repo.commit(HEAD,tree,message,function(e,commit){
-					if(e){return cb(errorlog("submitWords",e);return;};
-
-					HEAD=commit;
-
+			repo.updateTree(HEAD, W, blob, function(e,tree){
+				repo.commit(HEAD, tree, message, function(e, commit){
+					if(e)return;
 				});
 			});
 		});
 	});
-
 
 	//OT version
 	//diff the original md with current to get the client insert operation(s)
