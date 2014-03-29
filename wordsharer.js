@@ -144,10 +144,11 @@ function submitWords(retries){
 	mergeWords(function(e,newwords){
 		repo.postBlob(newwords,function(e,blob){
 			repo.updateTree(HEAD, W, blob, function(e,tree){
-				repo.commit(HEAD, tree, message, function(e, commit){
-					repo.updateHead("gh-pages",commit, function(e, commit){
+				repo.commit(HEAD, tree, message, function(e, head){
+					repo.updateHead("gh-pages",commit, function(e){
 						// this checks if you have fast-forward commit, and therefore if you actually can commit
-						if(e)submitWords(--retries);
+						if(e)return submitWords(--retries);
+						HEAD=head;
 						return;
 					});
 				});
