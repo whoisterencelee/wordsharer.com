@@ -63,6 +63,7 @@ function getWords(file,cb){
 	// this function can provide async so calling functions wont have to
 
 	repo.getRef("heads/gh-pages", function(e,head){
+		if(e){return cb(errorlog("getWords","unable to get head of gh-pages branch"),STAGED);}
 		HEAD=head;
 		repo.getSha(HEAD, file, function(e,sha){
 			if(e){return cb(errorlog("getWords","unable to get file "+file+" from branch gh-pages"),STAGED);}
@@ -143,6 +144,8 @@ function submitWords(retries){
 	mergeWords(function(e,newwords){
 		repo.postBlob(newwords,function(e,blob){
 			repo.updateTree(HEAD, W, blob, function(e,tree){
+
+				//can't use this, need to verify if commit actually went thur
 				repo.commit(HEAD, tree, message, function(e, commit){
 					if(e)return;
 				});
