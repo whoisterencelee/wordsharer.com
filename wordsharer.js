@@ -55,46 +55,31 @@ function wordsharer(words,options){
 
 }
 
-var DOCHEAD="";
+var DOCSHA="";
 var STAGED="";
 
 function getWords(file,cb){
+	// this function can provide async so calling functions wont have to
 
-	//get last commit for file
-	repo.getCommits({path:file,sha:"heads/gh-pages",per_page:1},function(e,commits){
-		if(e)return cb(errorlog("Unable to find last commit for "+file,e));
-		var lastcommit=commits[0];
-
-		//compare last commit sha with DOCHEAD if same return false, so won't trigger errorlogs and can test for sameness
-		if(lastcommit.sha==DOCHEAD)return cb(false,STAGED);
-
-		DOCHEAD=lastcommit.sha;
-		
-		//use lastcommit to get file
-		repo.req("GET",lastcommit.commit.tree.url,null,function(e,tree){
-			if(e)return cb(errorlog("Unable to find tree for commit "+lastcommit.sha,e));
-			
-			var blobobj = _.select(tree.tree, function(fileobj){return fileobj.path === file;})[0];
-
-			repo.req("GET",blobobj.url,null,function(e,filecontent){
-				if(e)return cb(errorlog("Unable to get file content of "+file+" @ commit "+lastcommit.sha,e));
-				
-				//put md thur markdown, because we are only working with HTML
-				marked(filecontent,function(e,markup){
-					if(e)return cb(errorlog("Unable to translate markdown/html to html ",e),null);
-
-					cb(null,repairHTML(markup));
-
-				});
-
-			},'raw');
+	repo.getSha('gh-pages',file, function(e,sha){
+		if(e){return cb(errorlog("getWords","unable to get file "+file+" from branch gh-pages"),STAGED);}
+		var pulled=null;// tristate: (1) null (pulled) or (2) false (not pulled) or (3) true/string (error)
+		if(sha==DOCSHA){pulled=false;return cb(pulled,STAGED);}
+		DOCSHA=sha;
+		repo.getBlob(sha,function(e,filecontent){
+			if(e){return cb(errorlog("getWords","unable to get filecontent from "+sha),STAGED);}
+			marked(filecontent,function(e,markup){// put md thur markdown, because we are only working with HTML
+				if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
+				cb(pulled,repairHTML(markup));
+			});
 		});
 	});
 }
 
 function mergeWords(cb){
 
-	//2.5 way merge, there is only append no delete
+	// 2.5 way merge, there is only append no delete
+	// we can merge and not submit to provide preview
 
 	C.contentEditable=false;// lock up, when ever we are going to modify C, otherwise the user might see their modification disappear
 
@@ -110,49 +95,62 @@ function mergeWords(cb){
 		// need MODIFIED to go thur the same process as STAGED so it as close as possible before diff, 
 		STAGED=repairHTML(D.diff(STAGED,repairHTML(MODIFIED)),C);
 		
-		//TODO modify htmlDIFF to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
+		// TODO modify htmlDIFF to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
+		// TODO insert time modify attribute to all ins and del that doesn't already have this attribute
 
 		//getWords and merge in
-		getWords(W,function(pull,REMOTE){
-			if(pull){
+		getWords(W,function(pulled,REMOTE){
+			var error=pulled;
+			if(error){
 				C.contentEditable=true;// unlock
-				alert("ERROR: Cannot merge REMOTE in. "+pull);
-				return cb(pull);
+				alert("ERROR: Cannot merge REMOTE in. "+error);
+				return cb(error);
 			}
 
-			if(pull!=false)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
-			//otherwise STAGED is already the latest
+			if(pulled===null)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);
+			// otherwise STAGED is already the latest
+			// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
 
+			if(typeof cb=='function')cb(pulled,STAGED);
 			C.contentEditable=true;// unlock
-
-			if(typeof cb=='function')cb(pull,STAGED);
 
 		});
 
-		//insert time modify attribute to all ins and del that doesn't already have this attribute
 	});
 }
 
-function submitWords(){
+MAXRETRIES=4;
+REPOHEAD="";
+
+function submitWords(retries){
+	if(typeof retries=='undefined')retries=MAXRETRIES;
+
+	// TODO fire and forget, user submit and even if there are new edits we try to save what's previously submitted
+	// but things get complicated, for example, do you show remote updates once your fire and forget?
+	// submit-merge-edit--------merge
+	//         `-trying to save-merge
+	// these final merges are different
+	// to do this need to separate mergeWords into stageWords and mergeWords, 
+	// if submit again, cancel previous non finished submit TODO implement queue
 
 	// lock submit button
 	// write commit message which is only generated once
 
-	mergeWords(function(pulled,newhtml){
+	mergeWords(function(e,newwords){
 
-		repo.postBlob(newhtml,function(e,blob){
-			if(e){errorlog("submitWords",e);return;};
+		repo.postBlob(newwords,function(e,blob){
+			if(e){return cb(errorlog("submitWords",e);return;};
 
-		});
-		// build/post tree
-			
-		// get REPOHEAD not DOCHEAD
-		repo.getRef("heads/gh-pages",function(e,sha){
-			if(e){errorlog("ERROR: submitWords : "+e);return;};
-			REPOHEAD=sha;
-			repo.updateTree(REPOHEAD,W,blob,function(e,tree){
-			
-			// don't save REPOHEAD as DOCHEAD, it would mean an extra mergeWords, but the extra work makes sure you really have the latest
+			repo.updateTree(HEAD,W,blob,function(e,tree){
+				if(e){return cb(errorlog("submitWords",e);return;};
+
+				repo.commit(HEAD,tree,message,function(e,commit){
+					if(e){return cb(errorlog("submitWords",e);return;};
+
+					HEAD=commit;
+
+				});
+			});
 		});
 	});
 
