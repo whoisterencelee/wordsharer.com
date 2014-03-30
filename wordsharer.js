@@ -62,6 +62,25 @@ var STAGED="";
 function getWords(file,cb){
 	// this function can provide async so calling functions wont have to
 
+	// getting content in one http request instead of three
+	// less flexible but faster, no need to track HEAD just DOCSHA (use when update)
+	// not sure if this is faster if we only want to check sha
+	// also response limited to 1M
+	repo.contents("gh-pages",W,function(e,fileobj){
+		if(e){return cb(errorlog("getWords","unable to get file object "+file+" from branch gh-pages"),STAGED);}
+		var pulled=null;// tristate: (1) null (pulled) or (2) false (not pulled) or (3) true/string (error)
+		var sha=fileobj.sha;
+		if(sha==DOCSHA){pulled=false;return cb(pulled,STAGED);}
+		DOCSHA=sha;
+		marked(Base64.decode(fileobj.content),function(e,markup){// put md thur markdown, because we are only working with HTML
+				if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
+				cb(pulled,repairHTML(markup));
+		});
+	}, false, 'json');
+
+	/*
+	// more flexible, no limit to file size, but need to download entire tree everytime
+	// need minimum two requests
 	repo.getRef("heads/gh-pages", function(e,head){
 		if(e){return cb(errorlog("getWords","unable to get head of gh-pages branch"),STAGED);}
 		HEAD=head;
@@ -79,6 +98,7 @@ function getWords(file,cb){
 			});
 		});
 	});
+	*/
 }
 
 function mergeWords(cb){
