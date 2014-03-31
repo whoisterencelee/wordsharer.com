@@ -43,6 +43,11 @@ function wordsharer(words,options){
 		};
 	};
 
+	getWords(W, function(e,content){
+		STAGED=content;
+	}, C);
+
+	/*
 	// borrow repo.req to quickly load the content first, not worry about atomic commits
 	repo.req('GET',U,null,function(e,text){
 		if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
@@ -52,6 +57,7 @@ function wordsharer(words,options){
 		mergeWords();// setup atomic read / write
 
 	},'raw');
+	*/
 
 }
 
@@ -59,10 +65,10 @@ var HEAD="";
 var DOCSHA="";
 var STAGED="";
 
-function getWords(file,cb){
+function getWords(file,cb,display){
 	// this function can provide async so calling functions wont have to
 
-	// getting content in one http request instead of three
+	// getting content in one http request instead of three using lower level API
 	// less flexible but faster, no need to track HEAD just DOCSHA (use when update)
 	// not sure if this is faster if we only want to check sha
 	// also response limited to 1M
@@ -74,7 +80,7 @@ function getWords(file,cb){
 		DOCSHA=sha;
 		marked(Base64.decode(fileobj.content),function(e,markup){// put md thur markdown, because we are only working with HTML
 				if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
-				cb(pulled,repairHTML(markup));
+				cb(pulled,repairHTML(markup,display));
 		});
 	}, false, 'json');
 
@@ -93,7 +99,7 @@ function getWords(file,cb){
 				if(e){return cb(errorlog("getWords","unable to get filecontent from "+sha),STAGED);}
 				marked(filecontent,function(e,markup){// put md thur markdown, because we are only working with HTML
 					if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
-					cb(pulled,repairHTML(markup));
+					cb(pulled,repairHTML(markup,display));
 				});
 			});
 		});
@@ -162,6 +168,13 @@ function submitWords(retries){
 	var message="submitted new words to "+W;
 
 	mergeWords(function(e,newwords){
+
+		repo.contents_update("gh-pages", W, message, newwords, DOCSHA, function(e,resp){
+			if(e)return submitWords(--retries);
+			DOCSHA=resp.content.sha;
+		});
+
+		/*
 		repo.postBlob(newwords,function(e,blob){
 			repo.updateTree(HEAD, W, blob, function(e,tree){
 				repo.commit(HEAD, tree, message, function(e, head){
@@ -174,6 +187,7 @@ function submitWords(retries){
 				});
 			});
 		});
+		*/
 	});
 
 	//OT version
