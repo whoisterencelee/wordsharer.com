@@ -47,21 +47,8 @@ function wordsharer(words,options){
 		STAGED=content;
 	}, C);
 
-	/*
-	// borrow repo.req to quickly load the content first, not worry about atomic commits
-	repo.req('GET',U,null,function(e,text){
-		if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
-	
-		STAGED=repairHTML(marked(text),C);
-
-		mergeWords();// setup atomic read / write
-
-	},'raw');
-	*/
-
 }
 
-var HEAD="";
 var DOCSHA="";
 var STAGED="";
 
@@ -84,27 +71,6 @@ function getWords(file,cb,display){
 		});
 	}, false, 'json');
 
-	/*
-	// more flexible, no limit to file size, but need to download entire tree everytime
-	// need minimum two requests
-	repo.getRef("heads/gh-pages", function(e,head){
-		if(e){return cb(errorlog("getWords","unable to get head of gh-pages branch"),STAGED);}
-		HEAD=head;
-		repo.getSha(HEAD, file, function(e,sha){
-			if(e){return cb(errorlog("getWords","unable to get file "+file+" from branch gh-pages"),STAGED);}
-			var pulled=null;// tristate: (1) null (pulled) or (2) false (not pulled) or (3) true/string (error)
-			if(sha==DOCSHA){pulled=false;return cb(pulled,STAGED);}
-			DOCSHA=sha;
-			repo.getBlob(sha,function(e,filecontent){
-				if(e){return cb(errorlog("getWords","unable to get filecontent from "+sha),STAGED);}
-				marked(filecontent,function(e,markup){// put md thur markdown, because we are only working with HTML
-					if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
-					cb(pulled,repairHTML(markup,display));
-				});
-			});
-		});
-	});
-	*/
 }
 
 function mergeWords(cb){
