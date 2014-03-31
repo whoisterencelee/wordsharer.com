@@ -43,58 +43,40 @@ function wordsharer(words,options){
 		};
 	};
 
-	// borrow repo.req to quickly load the content first, not worry about atomic commits
-	repo.req('GET',U,null,function(e,text){
-		if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
-	
-		STAGED=repairHTML(marked(text),C);
-
-		mergeWords();// setup atomic read / write
-
-	},'raw');
+	getWords(W, function(e,content){
+		STAGED=content;
+	}, C);
 
 }
 
-var DOCHEAD="";
+var DOCSHA="";
 var STAGED="";
 
-function getWords(file,cb){
+function getWords(file,cb,display){
+	// this function can provide async so calling functions wont have to
 
-	//get last commit for file
-	repo.getCommits({path:file,sha:"heads/gh-pages",per_page:1},function(e,commits){
-		if(e)return cb(errorlog("Unable to find last commit for "+file,e));
-		var lastcommit=commits[0];
-
-		//compare last commit sha with DOCHEAD if same return false, so won't trigger errorlogs and can test for sameness
-		if(lastcommit.sha==DOCHEAD)return cb(false,STAGED);
-
-		DOCHEAD=lastcommit.sha;
-		
-		//use lastcommit to get file
-		repo.req("GET",lastcommit.commit.tree.url,null,function(e,tree){
-			if(e)return cb(errorlog("Unable to find tree for commit "+lastcommit.sha,e));
-			
-			var blobobj = _.select(tree.tree, function(fileobj){return fileobj.path === file;})[0];
-
-			repo.req("GET",blobobj.url,null,function(e,filecontent){
-				if(e)return cb(errorlog("Unable to get file content of "+file+" @ commit "+lastcommit.sha,e));
-				
-				//put md thur markdown, because we are only working with HTML
-				marked(filecontent,function(e,markup){
-					if(e)return cb(errorlog("Unable to translate markdown/html to html ",e),null);
-
-					cb(null,repairHTML(markup));
-
-				});
-
-			},'raw');
+	// getting content in one http request instead of three using lower level API
+	// less flexible but faster, no need to track HEAD just DOCSHA (use when update)
+	// not sure if this is faster if we only want to check sha
+	// also response limited to 1M
+	repo.contents("gh-pages",W,function(e,fileobj){
+		if(e){return cb(errorlog("getWords","unable to get file object "+file+" from branch gh-pages"),STAGED);}
+		var pulled=null;// tristate: (1) null (pulled) or (2) false (not pulled) or (3) true/string (error)
+		var sha=fileobj.sha;
+		if(sha==DOCSHA){pulled=false;return cb(pulled,STAGED);}
+		DOCSHA=sha;
+		marked(Base64.decode(fileobj.content),function(e,markup){// put md thur markdown, because we are only working with HTML
+				if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
+				cb(pulled,repairHTML(markup,display));
 		});
-	});
+	}, false, 'json');
+
 }
 
 function mergeWords(cb){
 
-	//2.5 way merge, there is only append no delete
+	// 2.5 way merge, there is only append no delete
+	// we can merge and not submit to provide preview
 
 	C.contentEditable=false;// lock up, when ever we are going to modify C, otherwise the user might see their modification disappear
 
@@ -103,52 +85,76 @@ function mergeWords(cb){
 		if(e){
 			C.contentEditable=true;// unlock
 			alert("The edits you entered caused a problem during markdown->html conversion, operation aborted : "+e);
-			return;
+			return cb(e);
 		}
 
 		// first diff last STAGED with modified to mark what's changed with <ins> <del> and re-instate deleted text
 		// need MODIFIED to go thur the same process as STAGED so it as close as possible before diff, 
 		STAGED=repairHTML(D.diff(STAGED,repairHTML(MODIFIED)),C);
 		
-		//TODO modify htmlDIFF to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
+		// TODO modify htmlDIFF to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
+		// TODO insert time modify attribute to all ins and del that doesn't already have this attribute
 
 		//getWords and merge in
-		getWords(W,function(change,REMOTE){
-			if(change){
+		getWords(W,function(pulled,REMOTE){
+			var error=pulled;
+			if(error){
 				C.contentEditable=true;// unlock
-				alert("ERROR: Cannot merge REMOTE in. "+change);
-				return;
+				alert("ERROR: Cannot merge REMOTE in. "+error);
+				return cb(error);
 			}
 
-			if(change!=false)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
-			//otherwise STAGED is already the latest
+			if(pulled===null)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);
+			// otherwise STAGED is already the latest
+			// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
 
+			if(typeof cb=='function')cb(pulled,STAGED);
 			C.contentEditable=true;// unlock
-
-			if(typeof cb=='function')cb(null,STAGED);
 
 		});
 
-		//insert time modify attribute to all ins and del that doesn't already have this attribute
 	});
 }
 
-function submitWords(){
+MAXRETRIES=4;
+
+function submitWords(retries){
+	if(typeof retries=='undefined')retries=MAXRETRIES;
+
+	// TODO fire and forget, user submit and even if there are new edits we try to save what's previously submitted
+	// but things get complicated, for example, do you show remote updates once your fire and forget?
+	// submit-merge-edit--------merge
+	//         `-trying to save-merge
+	// these final merges are different
+	// to do this need to separate mergeWords into stageWords and mergeWords, 
+	// if submit again, cancel previous non finished submit TODO implement queue
 
 	// lock submit button
-	// write message which is only generated once
+	// write commit message which is only generated once
+	var message="submitted new words to "+W;
 
-	mergeWords(function(){
+	mergeWords(function(e,newwords){
 
-		repo.write('gh-pages','why.md',STAGED,"commit changes to "+W+" using wordsharer",function(err){console.log(err)});
+		repo.contents_update("gh-pages", W, message, newwords, DOCSHA, function(e,resp){
+			if(e)return submitWords(--retries);
+			DOCSHA=resp.content.sha;
+		});
 
-		// post blob first
-			// build/post tree
-			
-		// get REPOHEAD not DOCHEAD
-			// don't save REPOHEAD as DOCHEAD, it would mean an extra mergeWords, but the extra work makes sure you really have the latest
+		/*
+		repo.postBlob(newwords,function(e,blob){
+			repo.updateTree(HEAD, W, blob, function(e,tree){
+				repo.commit(HEAD, tree, message, function(e, head){
+					repo.updateHead("gh-pages",commit, function(e){
+						// this checks if you have fast-forward commit, and therefore if you actually can commit
+						if(e)return submitWords(--retries);
+						HEAD=head;
+						return;
+					});
+				});
+			});
+		});
+		*/
 	});
-
 
 	//OT version
 	//diff the original md with current to get the client insert operation(s)
@@ -163,7 +169,14 @@ function submitWords(){
 		//otherwise try from grab the 
 }
 
+function publishWords(){
+	//TODO should sanitize C.innerHTML first
+	var validhtml="<!DOCTYPE html><html><head></head>"+C.innerHTML+"</html>";
+	repo.write('gh-pages','why-published.html',validhtml,"publish "+W+" to "+W+".html using wordsharer",function(){});
+}
+
 function errorlog(heading,details){
-	console.log("ERROR: "+heading+" : "+details);
-	return "<H1>"+heading+"</H1><P>"+details+"</P>";
+	var s="ERROR: "+heading+" : "+details;
+	console.log(s);
+	return s;
 }
