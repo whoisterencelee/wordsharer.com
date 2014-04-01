@@ -178,16 +178,21 @@ function publishWords(){
 function buildTimeline(tags){
 	//grab all time from all ins/del tags
 	var I=C.getElementsByTagName('ins');
-	var NS=I.length,T=[];
+	var NS=I.length,P=[];
+
 	while(--NS){
-		var INS=I[NS].parentNode
-		while(1){
-			var INS=I[NS].parentNode;
-			if( /UL|OL/.test(INS.tagName) || INS==C )break;
-		}
-		T.push(INS);
+		var INS=I[NS];
+		var DT=INS.dateTime;
+		if(typeof DT=='undefined' && !DT.isDate() )continue;
+		do{
+			var PINS=INS.parentNode;
+			var TPINS=PINS.tagName;
+			if( TPINS == "p" ){ INS=PINS; break; };
+		}while(!( /UL|OL/.test(TPINS) || PINS==C ));
+		P.push([DT,INS]);
 	}
-	return I;
+	P.sort();
+	return P;
 }
 
 function errorlog(heading,details){
