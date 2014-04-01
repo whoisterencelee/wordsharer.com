@@ -17,7 +17,7 @@ function wordsharer(words,options){
 	gh=new Github({auth:'oauth',token:'b93365cb0876e6bf85728f3a10e2bab3384d428a'});//give personal access to repo, well repo is public anyways
 	repo=gh.getRepo('whoisterencelee','wordsharer.com');
 	C=document.getElementById('content');
-	CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
+	var CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
 	W=words;
 	U='.//'+W;// allows offline file load
 
@@ -173,6 +173,21 @@ function publishWords(){
 	//TODO should sanitize C.innerHTML first
 	var validhtml="<!DOCTYPE html><html><head></head>"+C.innerHTML+"</html>";
 	repo.write('gh-pages','why-published.html',validhtml,"publish "+W+" to "+W+".html using wordsharer",function(){});
+}
+
+function buildTimeline(tags){
+	//grab all time from all ins/del tags
+	var I=C.getElementsByTagName('ins');
+	var NS=I.length,T=[];
+	while(--NS){
+		var INS=I[NS].parentNode
+		while(1){
+			var INS=I[NS].parentNode;
+			if( /UL|OL/.test(INS.tagName) || INS==C )break;
+		}
+		T.push(INS);
+	}
+	return I;
 }
 
 function errorlog(heading,details){
