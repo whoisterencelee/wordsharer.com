@@ -180,18 +180,30 @@ function buildTimeline(tags){
 	var I=C.getElementsByTagName('ins');
 	var NS=I.length,P=[];
 
-	while(--NS){
+	// don't create class/inline style here, which would pollute the HTML, use CSS styling
+	// use CSS select based on the datetime attribute
+
+	while(NS--){
 		var INS=I[NS];
-		var DT=INS.dateTime;
-		if(typeof DT=='undefined' && !DT.isDate() )continue;
+		var DTA=INS.dateTime;
+		if(typeof DTA=='undefined' && !DTA.isDate() )continue;
+		var ENT=[DTA,INS];
+
+		/*// currently CSS doesn't support parent node selection, and we don't want to pollute the HTML
+		// maybe we can get the top and height of the parentNode and then outside the content create another div that has same top and height
+		// but this means any content modification needs to update the top/height....
+		// OR keep track of styling change and then remove the styling before merge
 		do{
 			var PINS=INS.parentNode;
 			var TPINS=PINS.tagName;
 			if( TPINS == "p" ){ INS=PINS; break; };
 		}while(!( /UL|OL/.test(TPINS) || PINS==C ));
-		P.push([DT,INS]);
+		ENT.push(INS);
+		*/
+
+		P.push(ENT);
 	}
-	P.sort();
+	P.sort(use);
 	return P;
 }
 
