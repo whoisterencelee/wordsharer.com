@@ -179,32 +179,38 @@ function buildTimeline(tags){
 	if(typeof tags=="string")tags=tags.split(",");
 	
 	for(var name in tags){
-		var I=C.getElementsByTagName(tags[name]);
+		var TagName=tags[name];
+		var I=C.getElementsByTagName(TagName);
 		var NS=I.length;
 
 		// don't create class/inline style here, which would pollute the HTML, use CSS styling
 		// use CSS select based on the datetime attribute
 
-		var timeline=[];// a list of timeentries=[datetime,tags...]
-		var timehash={};// key (time) contains a list of tags
+		var timeline=[];
+		var timecss={};
 		while(NS--){
 			var INS=I[NS];
 			var DTA=INS.dateTime;
 			if( typeof DTA != "string" || !(/\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ/.test(DTA)) )continue;// no datetime attribute for this tag
 
-			var timetags=timehash[DTA];
-			if(!timetags){
-				timetags=[];
-				timehash[DTA]=timetags;
-				timeline.push([DTA,timetags]);
+			var timecssrules=timecss[DTA];
+			if(!timecssrules){
+				timecssrules={};
+				timecss[DTA]=timecssrules;
+				timeline.push(DTA);
 			};
-			timetags.push(INS);
+			if(!timecssrules[TagName]){
+
+				// CSS rules for different time related tags
+				// see http://davidwalsh.name/add-rules-stylesheets
+				if(TagName=='del')timecssrules.del='del[datetime="'+DTA+'"]{background:grey;}';
+				else timecssrules[TagName]=TagName+'[datetime="'+DTA+'"]{background:orange;}';// ins and others
+			};
 
 			/*
-			// currently CSS doesn't support parent node selection, and we don't want to pollute the HTML
-			// maybe we can get the top and height of the parentNode and then outside the content create another div that has same top and height
-			// but this means any content modification needs to update the top/height....
-			// OR keep track of styling change and then remove the styling before merge
+			// had plans to do some cool styling with the tag's parent node e.g. modify border-right for <p><ins>...</ins></p>
+			// but currently CSS doesn't support parent node selection, and we don't want to pollute the HTML so this is not easy
+			// OR keep track of styling change and then remove the styling before merge, which would slow things up
 			do{
 				var PINS=INS.parentNode;
 				var TPINS=PINS.tagName;
@@ -213,21 +219,32 @@ function buildTimeline(tags){
 			timeentry.push(INS);
 			*/
 		};
-		return timeline.sort(function(a,b){return a[0]<b[0];});
+		return timeline.sort();
 	};
 }
+
+var timerule;
 
 function whatTime(time){
 	//build stylesheet base on time relative to timeline
 	var timeline=buildTimeline('ins,del');
 	var timelines=timeline.length,back=0;
+	var csssheet=document.getElementById('wordsharerstyle');
+	if(!csssheet){ alert('wordsharerstyle style element missing');return; }
 
 	while(timelines--){
 		var timeentry=timeline[back];
 		if(time > timeentry)break;
+
+		// collects all the timecssrules and 
+
 		
 		back++;
 	};
+	if(timerule)csssheet.sheet.deleteRule(timerule);
+
+	// one shot insert into wordsharerstyle sheet
+	timerule=csssheet.sheet.insertRule("@media all "+alltimerules,0);
 }
 
 function annotation(){
