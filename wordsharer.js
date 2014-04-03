@@ -176,35 +176,64 @@ function publishWords(){
 }
 
 function buildTimeline(tags){
-	//grab all time from all ins/del tags
-	var I=C.getElementsByTagName('ins');
-	var NS=I.length,P=[];
+	if(typeof tags=="string")tags=tags.split(",");
+	
+	for(var name in tags){
+		var I=C.getElementsByTagName(tags[name]);
+		var NS=I.length;
 
-	// don't create class/inline style here, which would pollute the HTML, use CSS styling
-	// use CSS select based on the datetime attribute
+		// don't create class/inline style here, which would pollute the HTML, use CSS styling
+		// use CSS select based on the datetime attribute
 
-	while(NS--){
-		var INS=I[NS];
-		var DTA=INS.dateTime;
-		if(typeof DTA=='undefined' && !DTA.isDate() )continue;
-		var ENT=[DTA,INS];
+		var timeline=[];// a list of timeentries=[datetime,tags...]
+		var timehash={};// key (time) contains a list of tags
+		while(NS--){
+			var INS=I[NS];
+			var DTA=INS.dateTime;
+			if( typeof DTA != "string" || !(/\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ/.test(DTA)) )continue;// no datetime attribute for this tag
 
-		/*// currently CSS doesn't support parent node selection, and we don't want to pollute the HTML
-		// maybe we can get the top and height of the parentNode and then outside the content create another div that has same top and height
-		// but this means any content modification needs to update the top/height....
-		// OR keep track of styling change and then remove the styling before merge
-		do{
-			var PINS=INS.parentNode;
-			var TPINS=PINS.tagName;
-			if( TPINS == "p" ){ INS=PINS; break; };
-		}while(!( /UL|OL/.test(TPINS) || PINS==C ));
-		ENT.push(INS);
-		*/
+			var timetags=timehash[DTA];
+			if(!timetags){
+				timetags=[];
+				timehash[DTA]=timetags;
+				timeline.push([DTA,timetags]);
+			};
+			timetags.push(INS);
 
-		P.push(ENT);
-	}
-	P.sort(use);
-	return P;
+			/*
+			// currently CSS doesn't support parent node selection, and we don't want to pollute the HTML
+			// maybe we can get the top and height of the parentNode and then outside the content create another div that has same top and height
+			// but this means any content modification needs to update the top/height....
+			// OR keep track of styling change and then remove the styling before merge
+			do{
+				var PINS=INS.parentNode;
+				var TPINS=PINS.tagName;
+				if( TPINS == "p" ){ INS=PINS; break; };
+			}while(!( /UL|OL/.test(TPINS) || PINS==C ));
+			timeentry.push(INS);
+			*/
+		};
+		return timeline.sort(function(a,b){return a[0]<b[0];});
+	};
+}
+
+function whatTime(time){
+	//build stylesheet base on time relative to timeline
+	var timeline=buildTimeline('ins,del');
+	var timelines=timeline.length,back=0;
+
+	while(timelines--){
+		var timeentry=timeline[back];
+		if(time > timeentry)break;
+		
+		back++;
+	};
+}
+
+function annotation(){
+	// insert <span class="annotation">comment</span>
+	// css: span.annotation{position:absolute;left:80%}
+	// need to define the left position during wordsharer load and read the annotation section left
 }
 
 function errorlog(heading,details){

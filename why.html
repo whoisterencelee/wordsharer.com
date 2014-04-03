@@ -42,7 +42,8 @@
 	<style>
 
 	div#content p{margin:0px;}
-	ins{text-decoration:none;border-bottom:1px dotted orange;
+	ins{text-decoration:none;}
+	span.annotation{position:absolute;left:80%;}
 
 	</style>
 	<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true">
@@ -52,13 +53,12 @@ TODO: save local version with localStorage<br />
 TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js, zenpen<br />
 </div>
 
-	<!-- ANNOTATION -->
+	<!-- ANNOTATION (reserved space)-->
 
 	<div id="annotation" style="float:left;width:20%;outline-style:none;" contenteditable="true">
 		<p style="margin:0px;text-align:right;">Annotations<br />
 		<div style="text-align:right;font-size:small;">comments that are not part of content</div>
 		</p>
-		<!--Another markdown, but with each p tag position based on content p position, need a top attribute that adjust based on top of p in content :TODO-->
 	</div>
         
   </body>
