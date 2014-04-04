@@ -12,7 +12,7 @@
 
 function wordsharer(words,options){
 	opt={repairHTML:1};// defaults
-	for(var o in options){opt[o]=options[o];};
+	for(var o in options){if(opt.hasOwnProperty(o))opt[o]=options[o];};
 
 	gh=new Github({auth:'oauth',token:'b93365cb0876e6bf85728f3a10e2bab3384d428a'});//give personal access to repo, well repo is public anyways
 	repo=gh.getRepo('whoisterencelee','wordsharer.com');
@@ -175,10 +175,13 @@ function publishWords(){
 	repo.write('gh-pages','why-published.html',validhtml,"publish "+W+" to "+W+".html using wordsharer",function(){});
 }
 
+var timeline=[],timecss={};
+
 function buildTimeline(tags){
 	if(typeof tags=="string")tags=tags.split(",");
 	
 	for(var name in tags){
+		if(!tags.hasOwnProperty(name))continue;
 		var TagName=tags[name];
 		var I=C.getElementsByTagName(TagName);
 		var NS=I.length;
@@ -186,8 +189,6 @@ function buildTimeline(tags){
 		// don't create class/inline style here, which would pollute the HTML, use CSS styling
 		// use CSS select based on the datetime attribute
 
-		var timeline=[];
-		var timecss={};
 		while(NS--){
 			var INS=I[NS];
 			var DTA=INS.dateTime;
@@ -203,8 +204,8 @@ function buildTimeline(tags){
 
 				// CSS rules for different time related tags
 				// see http://davidwalsh.name/add-rules-stylesheets
-				if(TagName=='del')timecssrules.del='del[datetime="'+DTA+'"]{background:grey;}';
-				else timecssrules[TagName]=TagName+'[datetime="'+DTA+'"]{background:orange;}';// ins and others
+				if(TagName=='del')timecssrules.del='del[datetime="'+DTA+'"]{background:grey;} ';
+				else timecssrules[TagName]=TagName+'[datetime="'+DTA+'"]{background:orange;} ';// ins and others
 			};
 
 			/*
@@ -219,38 +220,43 @@ function buildTimeline(tags){
 			timeentry.push(INS);
 			*/
 		};
-		return timeline.sort();
 	};
-}
+	return timeline.sort();// timeline must go from oldest to newest
+};
 
 var timerule;
 
 function whatTime(time){
 	//build stylesheet base on time relative to timeline
-	var timeline=buildTimeline('ins,del');
-	var timelines=timeline.length,back=0;
+	buildTimeline('ins,del');
+	var back=timeline.length;
+	var alltimerules='';
+
 	var csssheet=document.getElementById('wordsharerstyle');
 	if(!csssheet){ alert('wordsharerstyle style element missing');return; }
 
-	while(timelines--){
+	while(back--){
 		var timeentry=timeline[back];
 		if(time > timeentry)break;
 
-		// collects all the timecssrules and 
+		var timecssrules=timecss[timeentry]
+		for(var TagName in timecssrules){
+			if(!timecssrules.hasOwnProperty(TagName))continue;
 
-		
-		back++;
+			alltimerules+=timecssrules[TagName];
+		}
 	};
-	if(timerule)csssheet.sheet.deleteRule(timerule);
+	if(typeof timerule=='number')csssheet.sheet.deleteRule(timerule);
 
 	// one shot insert into wordsharerstyle sheet
-	timerule=csssheet.sheet.insertRule("@media all "+alltimerules,0);
+	timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
 }
 
 function annotation(){
 	// insert <span class="annotation">comment</span>
 	// css: span.annotation{position:absolute;left:80%}
 	// need to define the left position during wordsharer load and read the annotation section left
+	// find out text position in contenteditable when user click annotation side
 }
 
 function errorlog(heading,details){
