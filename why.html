@@ -20,18 +20,18 @@
     <title>WHY wordsharer by whoisterencelee</title>
   </head>
 
-  <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="wordsharer('why.md');false">
+  <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="wordsharer('why.md')">
 
 	<!-- FIXED LEFT SIDE -->
 	<div style="float:left;width:20%;">
 		<div style="position:fixed;top:10px;left:10px;width:15%;">
-			<a href="https://github.com/whoisterencelee/wordsharer.com">wordsharer</a>
-			<br /><button onclick="C.innerHTML=marked(C.innerHTML);false">markdn</button> <a href="https://help.github.com/articles/github-flavored-markdown">...</a>
-			<br /><button onclick="submitWords();false">submit</button>
+			<a href="https://wordsharer.com">wordsharer</a>
+			<br /><button onclick="C.innerHTML=marked(C.innerHTML)">markdn</button> <a href="https://help.github.com/articles/github-flavored-markdown">...</a>
+			<br /><button onclick="submitWords()">submit</button>
 			<br /><button disabled>share</button>
 			<!--fix function area-->
 			<br />
-			<ul style="font-size:small;">
+			<ul id="console" style="font-size:small;">
 			</ul>
 		</div>
 		<br /><br />
@@ -43,10 +43,10 @@
 
 	div#content p{margin:0px;}
 	ins{text-decoration:none;}
-	span.annotation{position:absolute;left:80%;}
+	span.notes{position:absolute;left:80%;border:1px;}
 
 	</style>
-	<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true">
+	<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true" onblur="selectWords(event)" onclick="selectWords(event)" >
 Content is inline editable<br />
 Feel free to write HTML/Markdown here and use <button>markdn</button> on the left<br />
 TODO: save local version with localStorage<br />
@@ -55,10 +55,16 @@ TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js
 
 	<!-- ANNOTATION (reserved space)-->
 
-	<div id="annotation" style="float:left;width:20%;outline-style:none;" contenteditable="true">
-		<p style="margin:0px;text-align:right;">Annotations<br />
-		<div style="text-align:right;font-size:small;">comments that are not part of content</div>
-		</p>
+	<div style="float:left;width:20%;">
+		<div style="position:fixed;top:10px;right:10px;width:15%;" onclick="noteWords()">
+			<p style="margin:0px;text-align:right;">Annotations<br />
+			<ul style="text-align:right;font-size:small;margin:0px;">
+			<li>comments that are not part of content</li>
+			<li>to make note on a position in the content, click here</li>
+			<li>or use <del>@comment@ markup TODO</del></li>
+			</ul>
+			</p>
+		</div>
 	</div>
         
   </body>

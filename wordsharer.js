@@ -21,6 +21,8 @@ function wordsharer(words,options){
 	W=words;
 	U='.//'+W;// allows offline file load
 
+	con=document.getElementById('console');
+
 	D=new htmlDiff;
 	D.clearHash();  // needed, initialize html tag hash stores
 
@@ -226,9 +228,9 @@ function buildTimeline(tags){
 
 var timerule;
 
-function whatTime(time){
+function whenWords(time){
 	//build stylesheet base on time relative to timeline
-	buildTimeline('ins,del');
+	buildTimeline('ins,del,span');
 	var back=timeline.length;
 	var alltimerules='';
 
@@ -252,11 +254,31 @@ function whatTime(time){
 	timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
 }
 
-function annotation(){
-	// insert <span class="annotation">comment</span>
+var anchor=[null,0];
+
+function selectWords(evt){
+	var selection=document.getSelection();
+	anchor=[selection.anchorNode,selection.anchorOffset];
+	con.innerHTML="<li>"+anchor[0].data+"</li>";
+	return false;
+};
+
+function noteWords(){
+	// insert <span class="notes">comment</span>
 	// css: span.annotation{position:absolute;left:80%}
 	// need to define the left position during wordsharer load and read the annotation section left
+
 	// find out text position in contenteditable when user click annotation side
+	var anchornode=anchor[0];
+	if(anchornode.nodeType!=3){alert('need to select something in content first before making annotation');return;};
+	con.innerHTML="<li>"+anchornode.data+"</li>";
+
+	var notenode='<span class="notes" datetime="'+new Date().toISOString()+'">Please enter your comment here</span>';
+
+	anchornode.parentNode.innerHTML;
+
+	// how to handle overlapping notes
+	return;
 }
 
 function errorlog(heading,details){
