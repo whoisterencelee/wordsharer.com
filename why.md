@@ -1,4 +1,4 @@
-<p></p><h1>How to use this?</h1><p></p>
+<p></p><h1>How to use this WordSharer?</h1><p></p>
 <p>Content is inline editable</p>
 <p>Feel free to write HTML/Markdown here and use <button>markdn</button> on the left</p><p><br></p>
 <p>Basic features that should be implemented:</p><ins datetime="2014-04-03T08:54:40.985Z"><p>really<del datetime="2014-04-03T08:54:40.985Z">&nbsp;</del><ins datetime="2014-04-03T08:56:40.985Z">, YES, these features with DONE are really implemented :^)<br></ins></p></ins>
