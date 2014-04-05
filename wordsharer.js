@@ -256,8 +256,13 @@ function whenWords(time){
 
 var markstart=[null,0];
 
-function markWords(evt){// set to trigger onclick and onkeyup, finds out last text position
+function markWords(evt){// set to trigger onmouseup and onkeyup, finds out last text position
 	var mark=document.getSelection();
+	var anchor=mark.anchorNode;
+	while(anchor.parentNode!=C){
+		if(anchor.parentNode.className=='notes')return;// prevent comment comment
+		anchor=anchor.parentNode;
+	};
 	markstart=[mark.anchorNode,mark.anchorOffset];
 //	con.innerHTML="<li>"+markstart[0].data+"</li>";//debug
 	return false;
@@ -269,7 +274,7 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	// need to define the left position during wordsharer load and set the annotation section left parameter
 
 	var anchor=markstart[0];
-	con.innerHTML="<li>"+anchor.data+"</li>";
+	//con.innerHTML="<li>"+anchor.data+"</li>";// debug
 
 	var notenode="<span class='notes' contenteditable='false'><div contenteditable='true'>Please enter your comment here</div></span>";
 
@@ -280,6 +285,7 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 		if(offset)anchor=anchor.children[offset-1];
 		offset=0;
 	}
+	if(!anchor){alert("please choose another location to make comment");return;};
 	var innerHTML=anchor.innerHTML;
 	anchor.innerHTML=innerHTML.slice(0,offset)+notenode+innerHTML.slice(offset);
 
