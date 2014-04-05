@@ -254,28 +254,34 @@ function whenWords(time){
 	timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
 }
 
-var anchor=[null,0];
+var markstart=[null,0];
 
-function selectWords(evt){
-	var selection=document.getSelection();
-	anchor=[selection.anchorNode,selection.anchorOffset];
-	con.innerHTML="<li>"+anchor[0].data+"</li>";
+function markWords(evt){// set to trigger onclick and onkeyup, finds out last text position
+	var mark=document.getSelection();
+	markstart=[mark.anchorNode,mark.anchorOffset];
+//	con.innerHTML="<li>"+markstart[0].data+"</li>";//debug
 	return false;
 };
 
-function noteWords(){
-	// insert <span class="notes">comment</span>
-	// css: span.annotation{position:absolute;left:80%}
-	// need to define the left position during wordsharer load and read the annotation section left
+function annotateWords(){// set to trigger onclick in some area outside of content
+	// no need datetime as ins will take care of this
+        // require css: span.notes{position:absolute;left:80%;z-index:1;} span.notes div{outline-style:none;}
+	// need to define the left position during wordsharer load and set the annotation section left parameter
 
-	// find out text position in contenteditable when user click annotation side
-	var anchornode=anchor[0];
-	if(anchornode.nodeType!=3){alert('need to select something in content first before making annotation');return;};
-	con.innerHTML="<li>"+anchornode.data+"</li>";
+	var anchor=markstart[0];
+	con.innerHTML="<li>"+anchor.data+"</li>";
 
-	var notenode='<span class="notes" datetime="'+new Date().toISOString()+'">Please enter your comment here</span>';
+	var notenode="<span class='notes' contenteditable='false'><div contenteditable='true'>Please enter your comment here</div></span>";
 
-	anchornode.parentNode.innerHTML;
+	var offset=markstart[1];
+	if(!anchor)return;
+	else if(anchor.nodeType==document.TEXT_NODE)anchor=anchor.parentNode;// mark in textnode
+	else{// mark in node without textnode
+		if(offset)anchor=anchor.children[offset-1];
+		offset=0;
+	}
+	var innerHTML=anchor.innerHTML;
+	anchor.innerHTML=innerHTML.slice(0,offset)+notenode+innerHTML.slice(offset);
 
 	// how to handle overlapping notes
 	return;

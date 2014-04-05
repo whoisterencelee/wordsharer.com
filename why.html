@@ -43,10 +43,11 @@
 
 	div#content p{margin:0px;}
 	ins{text-decoration:none;}
-	span.notes{position:absolute;left:80%;border:1px;}
+	span.notes{position:absolute;left:80%;border:1px dotted;z-index:1;padding-left:8px;padding-right:8px;}
+	span.notes div{outline-style:none;}
 
 	</style>
-	<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true" onblur="selectWords(event)" onclick="selectWords(event)" >
+	<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true" onclick="markWords()" onkeyup="markWords()" >
 Content is inline editable<br />
 Feel free to write HTML/Markdown here and use <button>markdn</button> on the left<br />
 TODO: save local version with localStorage<br />
@@ -56,7 +57,7 @@ TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js
 	<!-- ANNOTATION (reserved space)-->
 
 	<div style="float:left;width:20%;">
-		<div style="position:fixed;top:10px;right:10px;width:15%;" onclick="noteWords()">
+		<div style="position:fixed;top:10px;right:10px;width:15%;" onclick="annotateWords()">
 			<p style="margin:0px;text-align:right;">Annotations<br />
 			<ul style="text-align:right;font-size:small;margin:0px;">
 			<li>comments that are not part of content</li>
