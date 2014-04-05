@@ -137,10 +137,12 @@ function submitWords(retries){
 
 	mergeWords(function(e,newwords){
 
-		repo.contents_update("gh-pages", W, message, newwords, DOCSHA, function(e,resp){
-			if(e)return submitWords(--retries);
-			DOCSHA=resp.content.sha;
-		});
+		if(!offline){
+			repo.contents_update("gh-pages", W, message, newwords, DOCSHA, function(e,resp){
+				if(e)return submitWords(--retries);
+				DOCSHA=resp.content.sha;
+			});
+		}
 
 		/*
 		repo.postBlob(newwords,function(e,blob){
@@ -270,13 +272,15 @@ function markWords(evt){// set to trigger onmouseup and onkeyup, finds out last 
 
 function annotateWords(){// set to trigger onclick in some area outside of content
 	// no need datetime as ins will take care of this
-        // require css: span.notes{position:absolute;left:80%;z-index:1;} span.notes div{outline-style:none;}
+        // require css: span.notes{position:absolute;left:80%;z-index:1;} span.notes span{outline-style:none;}
 	// need to define the left position during wordsharer load and set the annotation section left parameter
 
 	var anchor=markstart[0];
 	//con.innerHTML="<li>"+anchor.data+"</li>";// debug
 
-	var notenode="<span class='notes' contenteditable='false'><div contenteditable='true'>Please enter your comment here</div></span>";
+	var notenode="<span class='notes' contenteditable='false'><span contenteditable='true'>Please enter your comment here</span></span>";
+	// don't use <p><span><div></div></span></p> since the repairHTML does not allow div inside p
+	// so it becomes <p><span></span></p><div></div> which is wrong, so don't use div
 
 	var offset=markstart[1];
 	if(!anchor)return;
