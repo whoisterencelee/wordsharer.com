@@ -1,4 +1,4 @@
-/ wordsharer.js - speedy, concise, propagate. Frictionless idea sharing powered by GitHub.
+// wordsharer.js - speedy, concise, propagate. Frictionless idea sharing powered by GitHub.
 // Copyright (c) 2014, Terence Lee
 // https://github.com/whoisterencelee/wordsharer.com.git
 
@@ -256,17 +256,17 @@ function whenWords(time){
 	timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
 }
 
-var markstart=[null,0];
+var mark=null;
 
 function markWords(evt){// set to trigger onmouseup and onkeyup, finds out last text position
-	var mark=document.getSelection();
-	var seafloor=mark.anchorNode.parentNode;
+	var justmark=document.getSelection();
+	var seafloor=justmark.anchorNode.parentNode;
 	while(seafloor!=C){
 		if(seafloor.className=='notes')return;// prevent comment comment
 		seafloor=seafloor.parentNode;
 		if(!seafloor)return;// prevent outside selection
 	};
-	markstart=[mark.anchorNode,mark.anchorOffset];
+	mark={anchorNode:justmark.anchorNode,anchorOffset:justmark.anchorOffset,data:justmark.data};// manually clone getSelection object
 //	con.innerHTML="<li>"+markstart[0].data+"</li>";//debug
 	return false;
 };
@@ -276,22 +276,14 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
         // require css: span.notes{position:absolute;left:80%;z-index:1;} span.notes span{outline-style:none;}
 	// need to define the left position during wordsharer load and set the annotation section left parameter
 
-	var anchor=markstart[0];
-
-	// need to find exact childNode of the selected parentNode
-	if(!anchor)return;
-	else if(anchor.nodeType==document.TEXT_NODE)var seafloor=anchor.parentNode;
-	else{// mark in node without textnode
-		if(offset)anchor=anchor.children[offset-1];
-		offset=0;
-	}
+	var anchor=mark.anchorNode;
 	if(!anchor){alert("please choose another location to make comment");return;};
-
 	var seafloor=anchor.parentNode;
+
 	//con.innerHTML="<li>"+anchor.data+"</li>";// debug
 
-	// can't insert using innerHTML, use DOM model
-	// don't use <p><span><div></div></span></p> since the repairHTML does not allow div inside p
+	// create comment DOM, can't insert using innerHTML, use DOM model
+	// don't use div i.e. <p><span><div></div></span></p> since the repairHTML does not allow div inside p
 	// so it becomes <p><span></span></p><div></div> which is wrong, so don't use div
 	var comment=document.createElement("span");
 	comment.contenteditable=true;
@@ -302,16 +294,19 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	commentbox.className="notes";
 	commentbox.appendChild(comment);
 
-	// a mark line can be created with another other span using border-top/left, position abs and width instead of left
+	// a mark line can be created with an additional span using border-top/left, set position abs and width instead of left
 	// but width can change, so not yet workable
 
-	var offset=markstart[1];
-	seafloor.insertBefore(document.createTextNode(mark.data.slice(0,offset),anchor);
-	seafloor.insertBefore(commentbox,anchor);
-	seafloor.replaceNode(document.createTextNode(mark.data.slice(offset),anchor);
+	var offset=mark.anchorOffset;
+	var text=anchor.data;
+	if(text){
+		seafloor.insertBefore(document.createTextNode(text.slice(0,offset)),anchor);
+		seafloor.insertBefore(commentbox,anchor);
+		seafloor.replaceChild(document.createTextNode(text.slice(offset)),anchor);
+	}else anchor.insertBefore(commentbox,anchor.childNodes[0]);
 
 	// all that dom work just for this
-	comment.focus();
+	// selec the comment text now
 
 	// still need to figure out how to handle overlapping notes
 
