@@ -1,4 +1,4 @@
-// wordsharer.js - speedy, concise, propagate. Frictionless idea sharing powered by GitHub.
+/ wordsharer.js - speedy, concise, propagate. Frictionless idea sharing powered by GitHub.
 // Copyright (c) 2014, Terence Lee
 // https://github.com/whoisterencelee/wordsharer.com.git
 
@@ -260,10 +260,11 @@ var markstart=[null,0];
 
 function markWords(evt){// set to trigger onmouseup and onkeyup, finds out last text position
 	var mark=document.getSelection();
-	var anchor=mark.anchorNode;
-	while(anchor.parentNode!=C){
-		if(anchor.parentNode.className=='notes')return;// prevent comment comment
-		anchor=anchor.parentNode;
+	var seafloor=mark.anchorNode.parentNode;
+	while(seafloor!=C){
+		if(seafloor.className=='notes')return;// prevent comment comment
+		seafloor=seafloor.parentNode;
+		if(!seafloor)return;// prevent outside selection
 	};
 	markstart=[mark.anchorNode,mark.anchorOffset];
 //	con.innerHTML="<li>"+markstart[0].data+"</li>";//debug
@@ -276,24 +277,44 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	// need to define the left position during wordsharer load and set the annotation section left parameter
 
 	var anchor=markstart[0];
-	//con.innerHTML="<li>"+anchor.data+"</li>";// debug
 
-	var notenode="<span class='notes' contenteditable='false'><span contenteditable='true'>Please enter your comment here</span></span>";
-	// don't use <p><span><div></div></span></p> since the repairHTML does not allow div inside p
-	// so it becomes <p><span></span></p><div></div> which is wrong, so don't use div
-
-	var offset=markstart[1];
+	// need to find exact childNode of the selected parentNode
 	if(!anchor)return;
-	else if(anchor.nodeType==document.TEXT_NODE)anchor=anchor.parentNode;// mark in textnode
+	else if(anchor.nodeType==document.TEXT_NODE)var seafloor=anchor.parentNode;
 	else{// mark in node without textnode
 		if(offset)anchor=anchor.children[offset-1];
 		offset=0;
 	}
 	if(!anchor){alert("please choose another location to make comment");return;};
-	var innerHTML=anchor.innerHTML;
-	anchor.innerHTML=innerHTML.slice(0,offset)+notenode+innerHTML.slice(offset);
 
-	// how to handle overlapping notes
+	var seafloor=anchor.parentNode;
+	//con.innerHTML="<li>"+anchor.data+"</li>";// debug
+
+	// can't insert using innerHTML, use DOM model
+	// don't use <p><span><div></div></span></p> since the repairHTML does not allow div inside p
+	// so it becomes <p><span></span></p><div></div> which is wrong, so don't use div
+	var comment=document.createElement("span");
+	comment.contenteditable=true;
+	comment.textContent="Please enter your comment here";
+
+	var commentbox=document.createElement("span");
+	commentbox.contenteditable=false;
+	commentbox.className="notes";
+	commentbox.appendChild(comment);
+
+	// a mark line can be created with another other span using border-top/left, position abs and width instead of left
+	// but width can change, so not yet workable
+
+	var offset=markstart[1];
+	seafloor.insertBefore(document.createTextNode(mark.data.slice(0,offset),anchor);
+	seafloor.insertBefore(commentbox,anchor);
+	seafloor.replaceNode(document.createTextNode(mark.data.slice(offset),anchor);
+
+	// all that dom work just for this
+	comment.focus();
+
+	// still need to figure out how to handle overlapping notes
+
 	return;
 }
 
