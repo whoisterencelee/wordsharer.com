@@ -121,7 +121,8 @@ function mergeWords(cb){
 MAXRETRIES=4;
 
 function submitWords(retries){
-	if(typeof retries=='undefined')retries=MAXRETRIES;
+	if(typeof retries!='number')retries=MAXRETRIES;
+	else if(retries<1){alert("unable to submit words try again later");return;}
 
 	// TODO fire and forget, user submit and even if there are new edits we try to save what's previously submitted
 	// but things get complicated, for example, do you show remote updates once your fire and forget?
@@ -286,11 +287,12 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	// don't use div i.e. <p><span><div></div></span></p> since the repairHTML does not allow div inside p
 	// so it becomes <p><span></span></p><div></div> which is wrong, so don't use div
 	var comment=document.createElement("span");
-	comment.contenteditable=true;
+	comment.contentEditable=true;// not contenteditable Upper Case E counts
 	comment.textContent="Please enter your comment here";
 
+	// need double span because absolute positioning with contentEditable gives a draggable/resizable box which we don't want
 	var commentbox=document.createElement("span");
-	commentbox.contenteditable=false;
+	commentbox.contentEditable=false;
 	commentbox.className="notes";
 	commentbox.appendChild(comment);
 
@@ -306,11 +308,29 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	}else anchor.insertBefore(commentbox,anchor.childNodes[0]);
 
 	// all that dom work just for this
-	// selec the comment text now
+	// select the comment text now, if more complicated range selection is needed use http://code.google.com/p/rangy/
+	var range, selection;
+	if (document.body.createTextRange) {
+		range = document.body.createTextRange();
+		range.moveToElementText(comment);
+		range.select();
+	} else if (window.getSelection) {
+		selection = window.getSelection();
+		range = document.createRange();
+		range.selectNodeContents(comment);
+		selection.removeAllRanges();
+		selection.addRange(range);
+	}
+	comment.focus();
 
 	// still need to figure out how to handle overlapping notes
 
 	return;
+}
+
+function commentWords(mark){
+	// similar to annotateWords 
+	// load a separate comment file which has a list of datetime/marks/comments that gets inserted into the content (which has contenteditable become false)
 }
 
 function errorlog(heading,details){
