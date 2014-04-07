@@ -14,9 +14,9 @@ function wordsharer(words,options){
 	opt={repairHTML:1};// defaults
 	for(var o in options){if(opt.hasOwnProperty(o))opt[o]=options[o];};
 
-	var writetoken=getParameterByName("token");
+	writetoken=getParameterByName("token");
 	if(typeof writetoken=="string") var gh=new Github({auth:'oauth',token:writetoken});//give personal access to repo, well repo is public anyways
-	else var gh=new Github();
+	else return alert("Need access token");
 
 	repo=gh.getRepo('whoisterencelee','wordsharer.com');
 
@@ -25,13 +25,15 @@ function wordsharer(words,options){
 
 	if(typeof words=='string')W=words;
 	else W=getParameterByName("words")+'.md';
-	if(W.length==0)return;
+	if(W=="null.md" || W.length==0)return;
+
+	var url=window.location.href;
+	if(!datetimeregexp.test(url))url=url.replace("&token=","&datetime="+new Date().toISOString()+"&token=");
+	document.getElementById('origdatetime').value=url;
 
 	offline=getParameterByName("offline");
-	U='.//'+W;// allows offline file load
 
-	datetime=getParameterByName("datetime");
-	if(typeof datetime!='string' || datetime.length!=24)datetime=new Date().toISOString();
+	U='.//'+W;// allows offline file load
 
 	con=document.getElementById('console');
 
@@ -60,7 +62,7 @@ function wordsharer(words,options){
 	getWords(W, function(e,content){
 		STAGED=content;
 		buildTimeline();
-		whenWords(datetime);
+		whenWords();
 	}, C);
 
 }
@@ -254,17 +256,17 @@ function buildTimeline(tags){
 
 var timerule;
 
-function whenWords(time){
+function whenWords(){
 	//build stylesheet base on time relative to timeline
 	//buildTimeline('ins,del');// have to have ran
-	var back=timeline.length;
-	if(!back)return;
+	var back=timeline.length,lasttime=back-1;
+	if(back<1)return;
 
-	if(typeof time!='string')time=datetime;
-	datetime=timeline[timeline.length-1];// next time show last 
+	var time=getParameterByName("datetime");
+	if(typeof time!='string')time=timeline[back-1];// highlight no updates, but build url later
 
 	var csssheet=document.getElementById('wordsharerstyle');
-	if(!csssheet){ alert('wordsharerstyle style element missing');return; }
+	if(!csssheet){ alert('wordsharerstyle style element missing, no highlights will be shown');return; }
 
 	var alltimerules='';
 	while(back--){
@@ -278,11 +280,29 @@ function whenWords(time){
 			alltimerules+=timecssrules[TagName];
 		}
 	};
-	if(typeof timerule=='number')csssheet.sheet.deleteRule(timerule);
 
-	// one shot insert into wordsharerstyle sheet
-	timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
+	if(back<lasttime){
+		con.innerHTML="<li>"+(lasttime-back)+" updates</li>";
+
+		if(typeof timerule=='number')csssheet.sheet.deleteRule(timerule);
+
+		// one shot insert into wordsharerstyle sheet
+		timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
+	}
+
+	time=timeline[lasttime];// for next time, show updates between now and next time
+
+	// change the browser history to new time, so user can bookmark latest
+	var urlquery=window.location.search;
+	if(!datetimeregexp.test(urlquery))urlquery=urlquery.replace("&token=","&datetime="+time+"&token=");
+	else urlquery=urlquery.replace(datetimeregexp,"&datetime="+time);
+	history.pushState(null,null,urlquery);
+
+	// TODO use browser history to implement timeline change
+
 }
+
+var datetimeregexp=/&datetime=[^&]+/;
 
 var mark=null;
 
