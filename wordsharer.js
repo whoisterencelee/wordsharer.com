@@ -27,10 +27,6 @@ function wordsharer(words,options){
 	else W=getParameterByName("words")+'.md';
 	if(W=="null.md" || W.length==0)return;
 
-	var url=window.location.href;
-	if(!datetimeregexp.test(url))url=url.replace("&token=","&datetime="+new Date().toISOString()+"&token=");
-	document.getElementById('origdatetime').value=url;
-
 	offline=getParameterByName("offline");
 
 	U='.//'+W;// allows offline file load
@@ -63,6 +59,15 @@ function wordsharer(words,options){
 		STAGED=content;
 		buildTimeline();
 		whenWords();
+
+		// run once after timeline is built to move the sharing url forward for next sharee or when replying to original sharer
+		var url=window.location.href;
+		if(datetimeregexp.test(url))url=url.replace(datetimeregexp,"&datetime="+timeline[timeline.length-1]);
+		else url=url.replace("&token=","&datetime="+timeline[timeline.length-1]+"&token=");
+		history.pushState(null,null,url);
+
+		//document.getElementById('origdatetime').textContent=url;
+
 	}, C);
 
 }
@@ -292,11 +297,14 @@ function whenWords(){
 
 	time=timeline[lasttime];// for next time, show updates between now and next time
 
+	/*
+	// save new time into cookies
 	// change the browser history to new time, so user can bookmark latest
 	var urlquery=window.location.search;
 	if(!datetimeregexp.test(urlquery))urlquery=urlquery.replace("&token=","&datetime="+time+"&token=");
 	else urlquery=urlquery.replace(datetimeregexp,"&datetime="+time);
 	history.pushState(null,null,urlquery);
+	*/
 
 	// TODO use browser history to implement timeline change
 
