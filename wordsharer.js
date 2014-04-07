@@ -138,7 +138,7 @@ function submitWords(retries){
 
 	mergeWords(function(e,newwords){
 
-		if(!offline){
+		if(typeof offline=='undefined'){
 			repo.contents_update("gh-pages", W, message, newwords, DOCSHA, function(e,resp){
 				if(e)return submitWords(--retries);
 				DOCSHA=resp.content.sha;
