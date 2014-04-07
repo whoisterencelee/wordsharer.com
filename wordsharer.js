@@ -4,22 +4,34 @@
 
 // requires:
 // marked.js		https://github.com/chjj/marked.git
-// github.js		https://github.com/whoisterencelee/github.git
+// github.js		https://github.com/whoisterencelee/github.git (whoisterencelee branch)
 //  underscore.js
 //  base64.js
-// htmlDiff		https://github.com/cosmiclattes/htmlDiff.git
+// htmlDiff		https://github.com/whoisterencelee/htmlDiff.git (whoisterencelee branch)
 //  google-diff-match-patch
 
 function wordsharer(words,options){
 	opt={repairHTML:1};// defaults
 	for(var o in options){if(opt.hasOwnProperty(o))opt[o]=options[o];};
 
-	gh=new Github({auth:'oauth',token:'b93365cb0876e6bf85728f3a10e2bab3384d428a'});//give personal access to repo, well repo is public anyways
+	var writetoken=getParameterByName("token");
+	if(typeof writetoken=="string") var gh=new Github({auth:'oauth',token:writetoken});//give personal access to repo, well repo is public anyways
+	else var gh=new Github();
+
 	repo=gh.getRepo('whoisterencelee','wordsharer.com');
+
 	C=document.getElementById('content');
 	var CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
-	W=words;
+
+	if(typeof words=='string')W=words;
+	else W=getParameterByName("words")+'.md';
+	if(W.length==0)return;
+
+	offline=getParameterByName("offline");
 	U='.//'+W;// allows offline file load
+
+	datetime=getParameterByName("datetime");
+	if(typeof datetime!='string' || datetime.length!=24)datetime=new Date().toISOString();
 
 	con=document.getElementById('console');
 
@@ -47,8 +59,15 @@ function wordsharer(words,options){
 
 	getWords(W, function(e,content){
 		STAGED=content;
+		buildTimeline();
+		whenWords(datetime);
 	}, C);
 
+}
+
+function getParameterByName(name) {
+	var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+	return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
 var DOCSHA="";
@@ -111,6 +130,7 @@ function mergeWords(cb){
 			// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
 
 			if(typeof cb=='function')cb(pulled,STAGED);
+
 			C.contentEditable=true;// unlock
 
 		});
@@ -138,10 +158,12 @@ function submitWords(retries){
 
 	mergeWords(function(e,newwords){
 
-		if(typeof offline=='undefined'){
+		if(offline===null || typeof offline=='undefined'){
 			repo.contents_update("gh-pages", W, message, newwords, DOCSHA, function(e,resp){
 				if(e)return submitWords(--retries);
 				DOCSHA=resp.content.sha;
+				buildTimeline();
+				whenWords();
 			});
 		}
 
@@ -184,6 +206,7 @@ var timeline=[],timecss={};
 
 function buildTimeline(tags){
 	if(typeof tags=="string")tags=tags.split(",");
+	else tags=['ins','del'];
 	
 	for(var name in tags){
 		if(!tags.hasOwnProperty(name))continue;
@@ -233,16 +256,20 @@ var timerule;
 
 function whenWords(time){
 	//build stylesheet base on time relative to timeline
-	buildTimeline('ins,del,span');
+	//buildTimeline('ins,del');// have to have ran
 	var back=timeline.length;
-	var alltimerules='';
+	if(!back)return;
+
+	if(typeof time!='string')time=datetime;
+	datetime=timeline[timeline.length-1];// next time show last 
 
 	var csssheet=document.getElementById('wordsharerstyle');
 	if(!csssheet){ alert('wordsharerstyle style element missing');return; }
 
+	var alltimerules='';
 	while(back--){
 		var timeentry=timeline[back];
-		if(time > timeentry)break;
+		if(time >= timeentry)break;
 
 		var timecssrules=timecss[timeentry]
 		for(var TagName in timecssrules){
@@ -331,6 +358,7 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 function commentWords(mark){
 	// similar to annotateWords 
 	// load a separate comment file which has a list of datetime/marks/comments that gets inserted into the content (which has contenteditable become false)
+	// the comment file can even sit on another repo for better access control
 }
 
 function errorlog(heading,details){

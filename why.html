@@ -20,7 +20,7 @@
     <title>WHY wordsharer by whoisterencelee</title>
   </head>
 
-  <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="wordsharer('why.md')">
+  <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="wordsharer()">
 
 	<!-- FIXED LEFT SIDE -->
 	<div style="float:left;width:20%;">
@@ -43,8 +43,8 @@
 
 	div#content p{margin:0px;}
 	ins{text-decoration:none;}
-	span.notes{position:absolute;left:80%;border:1px dotted;z-index:1;padding-left:8px;padding-right:8px;}
-	span.notes div{outline-style:none;}
+	span.notes{position:absolute;left:80%;border:1px dotted;z-index:-10;padding-left:8px;padding-right:8px;}
+	span.notes span{outline-style:none;}
 
 	</style>
 	<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true" onmouseup="markWords()" onkeyup="markWords()" >
