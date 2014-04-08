@@ -328,8 +328,9 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	// create comment DOM, can't insert using innerHTML, use DOM model
 	// don't use div i.e. <p><span><div></div></span></p> since the repairHTML does not allow div inside p
 	// so it becomes <p><span></span></p><div></div> which is wrong, so don't use div
+	// dont' use p within p as well, <p><span><p></p></span></span>
 	
-	var comment=document.createElement("p");
+	var comment=document.createElement("span");
 	comment.contentEditable=true;// not contenteditable Upper Case E counts
 	comment.textContent="Please enter your comment here";
 
