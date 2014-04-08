@@ -328,7 +328,7 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	// create comment DOM, can't insert using innerHTML, use DOM model
 	// don't use div i.e. <p><span><div></div></span></p> since the repairHTML does not allow div inside p
 	// so it becomes <p><span></span></p><div></div> which is wrong, so don't use div
-	// dont' use p within p as well, <p><span><p></p></span></span>
+	// dont' use p within p as well, <p><p></p></p> doesn't work
 	
 	var comment=document.createElement("span");
 	comment.contentEditable=true;// not contenteditable Upper Case E counts
@@ -349,7 +349,12 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 		seafloor.insertBefore(document.createTextNode(text.slice(0,offset)),anchor);
 		seafloor.insertBefore(commentbox,anchor);
 		seafloor.replaceChild(document.createTextNode(text.slice(offset)),anchor);
-	}else anchor.insertBefore(commentbox,anchor.childNodes[0]);
+	}else{
+		seafloor=anchor;
+		anchor=anchor.childNodes[0];
+		if(!anchor)anchor=null;
+		seafloor.insertBefore(commentbox,anchor);
+	};
 
 	// all that dom work just for this
 	// select the comment text now, if more complicated range selection is needed use http://code.google.com/p/rangy/
@@ -366,6 +371,12 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 		selection.addRange(range);
 	}
 	comment.focus();
+
+	// undo if no comment entered
+	comment.onblur=function(){
+		if(/^Please enter your comment here/.test(comment.textContent))seafloor.removeChild(commentbox);
+		// no need to recombine TextNodes, they are recombined automatically
+	};
 
 	// still need to figure out how to handle overlapping notes
 
