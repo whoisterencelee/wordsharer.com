@@ -27,10 +27,6 @@ function wordsharer(words,options){
 	else W=getParameterByName("words")+'.md';
 	if(W=="null.md" || W.length==0)return;
 
-	var url=window.location.href;
-	if(!datetimeregexp.test(url))url=url.replace("&token=","&datetime="+new Date().toISOString()+"&token=");
-	document.getElementById('origdatetime').value=url;
-
 	offline=getParameterByName("offline");
 
 	U='.//'+W;// allows offline file load
@@ -63,6 +59,17 @@ function wordsharer(words,options){
 		STAGED=content;
 		buildTimeline();
 		whenWords();
+
+		// run once after timeline to move datetime to newest so next sharee will see what you changed
+		var datetimeregexp=/&datetime=[^&]+/;
+
+		var urlquery=window.location.search;
+		if(!datetimeregexp.test(urlquery))urlquery=urlquery.replace("&token=","&datetime="+timeline[timeline.length-1]+"&token=");
+		else urlquery=urlquery.replace(datetimeregexp,"&datetime="+timeline[timeline.length-1]);
+		history.pushState(null,null,urlquery);
+
+		// TODO use browser history to implement timeline change, but this just makes things complicated...
+
 	}, C);
 
 }
@@ -290,19 +297,7 @@ function whenWords(){
 		timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
 	}
 
-	time=timeline[lasttime];// for next time, show updates between now and next time
-
-	// change the browser history to new time, so user can bookmark latest
-	var urlquery=window.location.search;
-	if(!datetimeregexp.test(urlquery))urlquery=urlquery.replace("&token=","&datetime="+time+"&token=");
-	else urlquery=urlquery.replace(datetimeregexp,"&datetime="+time);
-	history.pushState(null,null,urlquery);
-
-	// TODO use browser history to implement timeline change
-
 }
-
-var datetimeregexp=/&datetime=[^&]+/;
 
 var mark=null;
 
@@ -333,7 +328,8 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	// create comment DOM, can't insert using innerHTML, use DOM model
 	// don't use div i.e. <p><span><div></div></span></p> since the repairHTML does not allow div inside p
 	// so it becomes <p><span></span></p><div></div> which is wrong, so don't use div
-	var comment=document.createElement("span");
+	
+	var comment=document.createElement("p");
 	comment.contentEditable=true;// not contenteditable Upper Case E counts
 	comment.textContent="Please enter your comment here";
 
