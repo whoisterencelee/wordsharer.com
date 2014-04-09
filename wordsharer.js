@@ -309,7 +309,7 @@ function markWords(evt){// set to trigger onmouseup and onkeyup, finds out last 
 		seafloor=seafloor.parentNode;
 		if(!seafloor)return;// prevent outside selection
 	};
-	mark={anchorNode:justmark.anchorNode,anchorOffset:justmark.anchorOffset,data:justmark.data};// manually clone getSelection object
+	mark={anchorNode:justmark.anchorNode,anchorOffset:justmark.anchorOffset,data:justmark.anchorNode.data};// manually clone getSelection object
 //	con.innerHTML="<li>"+markstart[0].data+"</li>";//debug
 	return false;
 };
@@ -320,8 +320,9 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	// need to define the left position during wordsharer load and set the annotation section left parameter
 
 	var anchor=mark.anchorNode;
-	if(!anchor){alert("please choose another location to make comment");return;};
+	if(!anchor)return;
 	var seafloor=anchor.parentNode;
+	if(!seafloor)return;
 
 	//con.innerHTML="<li>"+anchor.data+"</li>";// debug
 

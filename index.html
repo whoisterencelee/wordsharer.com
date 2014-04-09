@@ -22,51 +22,51 @@
 
   <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="wordsharer()">
 
-	<!-- FIXED LEFT SIDE -->
-	<div style="float:left;width:20%;">
-		<div style="position:fixed;top:10px;left:10px;width:15%;font-size:small;">
-			<a href="https://wordsharer.com">wordsharer</a>
-			<br />edit words and share url
-			<br /><button onclick="C.innerHTML=marked(C.innerHTML)">markdn</button> <a href="https://help.github.com/articles/github-flavored-markdown">...</a>
-			<br /><button onclick="submitWords()">submit</button>
-			<!--fix function area-->
-			<br />
-			<ul id="console" style="font-size:small;">
-			</ul>
+	<!-- ANNOTATION (reserved space)-->
+
+	<!--
+	<div style="float:left;width:20%;"><br/>
+		<div style="position:fixed;top:10px;font-size:small;color:gray;text-align:left;" onclick="annotateWords()">
+			mark any position<br/>
+			click here to annotate<br/>
+			or use <del>//markdn//</del>
 		</div>
-		<br /><br />
-		<!--scroll area-->
 	</div>
-	
+	-->
+	<div style="position:fixed;width:20%;height:100%;top:10px;font-size:small;color:gray;" onclick="annotateWords()">
+		mark any position<br/>
+		click left margin to annotate<br/>
+		or use <del>//markdn//</del>
+	</div>
+
 	<!-- CONTENT -->
 	<style id="wordsharerstyle">
 
 	div#content p{margin:0px;}
 	ins{text-decoration:none;}
-	span.notes{position:absolute;left:80%;z-index:-10;color:gray;margin-right:8px;font-size:small;font-style:italic;}
+	span.notes{position:absolute;left:10px;width:20%;padding-right:10px;z-index:10;color:gray;font-size:small;font-style:italic;}
 	span.notes span{outline-style:none;}
 
 	</style>
-	<div id="content" style="float:left;width:60%;outline-style:none;" contenteditable="true" onmouseup="markWords()" onkeyup="markWords()" >
+	<div id="content" style="float:left;padding-left:21%;padding-right:164px;outline-style:none;" contenteditable="true" onmouseup="markWords()"><!-- must be mouseup -->
 Content is inline editable<br />
 Feel free to write HTML/Markdown here and use <button>markdn</button> on the left<br />
 TODO: save local version with localStorage<br />
 TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js, zenpen<br />
 </div>
 
-	<!-- ANNOTATION (reserved space)-->
-
-	<div style="float:left;width:20%;">
-		<div style="position:fixed;top:10px;right:10px;font-size:small;color:gray;text-align:right;" onclick="annotateWords()">
-			mark any position<br/>
-			click here to annotate<br/>
-			or use <del>@markdn@</del>
-
-			<ul style="text-align:right;font-size:small;margin:0px;">
-			</ul>
-			</p>
-		</div>
+	<!-- FIXED RIGHT SIDE -->
+	<div style="position:fixed;top:10px;right:10px;font-size:small;text-align:right;">
+		<a href="https://wordsharer.com">wordsharer</a>
+		<br />edit words and share url
+		<br /><a href="https://help.github.com/articles/github-flavored-markdown">...</a> <button onclick="C.innerHTML=marked(C.innerHTML)">markdn</button>
+		<br /><button onclick="submitWords()">submit</button>
+		<!--fix function area-->
+		<br />
+		<ul id="console" style="font-size:small;">
+		</ul>
 	</div>
+	<!--scroll area-->
         
   </body>
 </html>
