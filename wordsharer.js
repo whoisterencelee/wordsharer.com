@@ -347,6 +347,8 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	var offset=mark.anchorOffset;
 	var text=anchor.data;
 	if(text){
+		//try to insert at beginning of word
+		while(offset){if(text[offset-1]==" ")break;offset--;};
 		seafloor.insertBefore(document.createTextNode(text.slice(0,offset)),anchor);
 		seafloor.insertBefore(commentbox,anchor);
 		seafloor.replaceChild(document.createTextNode(text.slice(offset)),anchor);
