@@ -241,7 +241,7 @@ function buildTimeline(tags){
 
 				// CSS rules for different time related tags
 				// see http://davidwalsh.name/add-rules-stylesheets
-				if(TagName=='del')timecssrules.del='del[datetime="'+DTA+'"]{background:grey;} ';
+				if(TagName=='del')timecssrules.del='del[datetime="'+DTA+'"]{background:lightgrey;} ';
 				else timecssrules[TagName]=TagName+'[datetime="'+DTA+'"]{background:orange;} ';// ins and others
 			};
 
