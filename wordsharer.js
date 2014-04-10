@@ -311,7 +311,6 @@ function markWords(evt){// set to trigger onmouseup and onkeyup, finds out last 
 	};
 	mark={anchorNode:justmark.anchorNode,anchorOffset:justmark.anchorOffset,data:justmark.anchorNode.data};// manually clone getSelection object
 //	con.innerHTML="<li>"+markstart[0].data+"</li>";//debug
-	return false;
 };
 
 function annotateWords(){// set to trigger onclick in some area outside of content
@@ -319,6 +318,7 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
         // require css: span.notes{position:absolute;left:80%;z-index:1;} span.notes span{outline-style:none;}
 	// need to define the left position during wordsharer load and set the annotation section left parameter
 
+	if(!mark)return;
 	var anchor=mark.anchorNode;
 	if(!anchor)return;
 	var seafloor=anchor.parentNode;
@@ -347,8 +347,9 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	var offset=mark.anchorOffset;
 	var text=anchor.data;
 	if(text){
-		//try to insert at beginning of word
-		while(offset){if(text[offset-1]==" ")break;offset--;};
+		//try to insert at end of word
+		var end=text.length;
+		while(offset<end){if(text[offset]==" ")break;offset++;};
 		seafloor.insertBefore(document.createTextNode(text.slice(0,offset)),anchor);
 		seafloor.insertBefore(commentbox,anchor);
 		seafloor.replaceChild(document.createTextNode(text.slice(offset)),anchor);
