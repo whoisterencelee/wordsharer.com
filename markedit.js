@@ -14,33 +14,47 @@ var block = {
 //  newline: /^\n+/,
   code: noop, ///^( {4}[^\n]+\n*)+/,
   fences: noop,
-  hr: noop, ///^( *[-*_]){3,} *(?:\n+|$)/,
-  heading: /^ *(#{1,6}) *([^\n|<]+?) *#* *(?=<|\n+|$)/,
-  //heading: noop, ///^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
+  hr: /^( *[-*_]){3,} *(?:\n+|$)/,
+  heading: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
   nptable: noop,
-  lheading: noop, ///^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
+  lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
   blockquote: noop, ///^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
   list: noop, ///^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
   html: /^xml+/,
 //  html: /^ *(?:comment|closed|closing) *(?:\n{2,}|\s*$)/,
-  def: noop, ///^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
+  def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
   table: noop,
 //  paragraph: /^((?:[^\n]+\n?(?!hr|heading|lheading|blockquote|tag|def))+)\n*/,
   text: /^[^<]+/
 //  text: /^[^\n|<]+/
 };
 
+//custom transformation
+block.lheading=replace(block.lheading)(')\\n',')(?:<[^>]*>|\\n)+')();
+block.def=replace(block.def)
+	('<','(?:&lt;)')
+	('([^\\s>]+)','([^\\s]+)(?=&nbsp|&gt;|\\s)')
+	('>?','(?:&gt;)?')();
+///^(?:&nbsp;| )*\[([^\]]+)\]:(?:&nbsp;| )*(?:&lt;)?([^\s]+)(?=&gt;|&nbsp;)/
+//block.def=replace(block.def)('<','(?:&lt;)')('[^\\s>]','[^\\s|&]')('>?','(?:&gt;)?')();
+	
+//generic contenteditable markdown rule transformation
+var transform=['hr','heading','lheading','def'];
+for(var rule in transform){
+	block[transform[rule]]=replace(block[transform[rule]])	// ordering matters e.g. A1 must be before A2
+				(/\[\^\\n\]/g, '[^<|\\n]') 	// detect all non \n and non tag characters
+				(/\(\?:\\n/g, '(?=<|\\n')	// end won't consume extra \n or < anchor character 
+				(/ /g, '(?:&nbsp;| )')		// account for escaped space 
+				();
+	block[transform[rule]];
+}
+
+block.xml = '(<[^>|\n]*>)';
+
 block._tag = '(?!(?:'
   + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code'
   + '|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo'
   + '|span|br|wbr|ins|del|img)\\b)\\w+(?!:/|[^\\w\\s@]*@)\\b';
-
-block.xml = '(<[^>|\n]*>)';
-block.space = '(?:&nbsp;| )';
-
-block.heading = replace(block.heading)
-  (/ /g, block.space)
-  ();
 
 block.html = replace(block.html)
   ('comment', /<!--[\s\S]*?-->/)
@@ -764,8 +778,7 @@ Renderer.prototype.heading = function(text, level, raw) {
     + text
     + '</h'
     + level
-    + '>';
-//    + '>\n';
+    + '>\n';
 };
 
 Renderer.prototype.hr = function() {
