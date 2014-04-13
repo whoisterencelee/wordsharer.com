@@ -18,9 +18,9 @@ var block = {
   heading: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
   nptable: noop,
   lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
-  blockquote: noop, ///^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
+  blockquote: /^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
   list: noop, ///^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
-  html: /^xml+/,
+  html: /^(xml)+/,
 //  html: /^ *(?:comment|closed|closing) *(?:\n{2,}|\s*$)/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
   table: noop,
@@ -30,21 +30,23 @@ var block = {
 };
 
 //custom transformation
-block.lheading=replace(block.lheading)(')\\n',')(?:<[^>]*>|\\n)+')();
 block.def=replace(block.def)
-	('<','(?:&lt;)')
-	('([^\\s>]+)','([^\\s]+)(?=&nbsp|&gt;|\\s)')
-	('>?','(?:&gt;)?')();
-///^(?:&nbsp;| )*\[([^\]]+)\]:(?:&nbsp;| )*(?:&lt;)?([^\s]+)(?=&gt;|&nbsp;)/
-//block.def=replace(block.def)('<','(?:&lt;)')('[^\\s>]','[^\\s|&]')('>?','(?:&gt;)?')();
+	('[^\\s>]+','[^\\s]+?')// dont' worry about '>' it's checked after this and it's %3E in URI
+	('["(]','(?:&quot;|"|\\()')
+	('[")]','(?:&quot;|"|\\))')
+	();
 	
 //generic contenteditable markdown rule transformation
-var transform=['hr','heading','lheading','def'];
+var transform=['code','hr','heading','lheading','def','blockquote'];
 for(var rule in transform){
-	block[transform[rule]]=replace(block[transform[rule]])	// ordering matters e.g. A1 must be before A2
-				(/\[\^\\n\]/g, '[^<|\\n]') 	// detect all non \n and non tag characters
-				(/\(\?:\\n/g, '(?=<|\\n')	// end won't consume extra \n or < anchor character 
-				(/ /g, '(?:&nbsp;| )')		// account for escaped space 
+	block[transform[rule]]=replace(block[transform[rule]])			// ordering matters
+				(/</g, '(?:&lt;)')				// < -> &lt;
+				(/>/g, '(?:&gt;)')				// > -> &gt;
+				(/([^^:])\\n/g, '$1(?:(?:<[^>]*>)+\\n?)')	// \n (not [^\n] or ?:\n) -> <tag(s)> or <tag(s)>\n
+				(/\[\^\\n\]/g, '[^<|\\n]') 			// detect all non \n and non tag characters (faster)
+				//(/\[\^\\n\]/g, '.') 				// detect all non \n and non tag characters (slower)
+				(/\(\?:\\n/g, '(?=<|\\n')			// end won't consume extra \n or < anchor character
+				(/ /g, '(?:&nbsp;| )')				// account for escaped space 
 				();
 	block[transform[rule]];
 }
@@ -62,6 +64,10 @@ block.html = replace(block.html)
   ('closing', /<tag(?:"[^"]*"|'[^']*'|[^'">])*?>/)
   (/tag/g, block._tag)
   ('xml', block.xml)
+  ();
+
+block.blockquote = replace(block.blockquote)
+  ('def', block.def)
   ();
 
 /**
