@@ -12,7 +12,7 @@
 
 var block = {
 //  newline: /^\n+/,
-  code: noop, ///^( {4}[^\n]+\n*)+/,
+  code: /^( {4}[^\n]+\n*)+/,
   fences: noop,
   hr: /^( *[-*_]){3,} *(?:\n+|$)/,
   heading: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
@@ -35,9 +35,14 @@ block.def=replace(block.def)
 	('["(]','(?:&quot;|"|\\()')
 	('[")]','(?:&quot;|"|\\))')
 	();
+block.code=replace(/^( {4}[^\n]+(?:(?:(?:<[^>]*>)+\n?)+ {4}[^\n]+)*)/) 	// we don't want to consume the tag after code section, so we find code<>\ncode*
+									// can't use the generic transformation, since we want to consume the <>\n in middle
+		(/\[\^\\n\]/g, '[^<|\\n]') 			// detect all non \n and non tag characters (faster)
+		(/ /g, '(?:&nbsp;| )')				// account for escaped space 
+		();
 	
 //generic contenteditable markdown rule transformation
-var transform=['code','hr','heading','lheading','def','blockquote'];
+var transform=['hr','heading','lheading','def','blockquote'];
 for(var rule in transform){
 	block[transform[rule]]=replace(block[transform[rule]])			// ordering matters
 				(/</g, '(?:&lt;)')				// < -> &lt;
@@ -173,7 +178,8 @@ Lexer.prototype.token = function(src, top, bq) {
     // code
     if (cap = this.rules.code.exec(src)) {
       src = src.substring(cap[0].length);
-      cap = cap[0].replace(/^ {4}/gm, '');
+      cap[0]=cap[0].replace(/(?:<[^>]*>)+/g, '\n');
+      cap = cap[0].replace(/^(?:&nbsp;| ){4}/gm, '');
       this.tokens.push({
         type: 'code',
         text: !this.options.pedantic
