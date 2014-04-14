@@ -19,7 +19,7 @@ var block = {
   nptable: noop,
   lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
   blockquote: /^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
-  list: noop, ///^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
+  list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
   html: /^(xml)+/,
 //  html: /^ *(?:comment|closed|closing) *(?:\n{2,}|\s*$)/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
@@ -29,34 +29,47 @@ var block = {
 //  text: /^[^\n|<]+/
 };
 
+block.bullet = /(?:[*+-]|\d+\.)/;
+block.item = /^( *)(bull) [^\n]*(?:\n(?!\1bull )[^\n]*)*/;
+block.item = replace(block.item, 'gm')
+  (/bull/g, block.bullet)
+  ();
+
+block.list = replace(block.list)
+  (/bull/g, block.bullet)
+  ('hr', '\\n+(?=\\1?(?:[-*_] *){3,}(?:\\n+|$))')
+  ('def', '\\n+(?=' + block.def.source + ')')
+  ();
+
+
 //custom transformation
 block.def=replace(block.def)
 	('[^\\s>]+','[^\\s]+?')// dont' worry about '>' it's checked after this and it's %3E in URI
+	(/</g, '(?:&lt;)')		// < -> &lt;
+	(/>/g, '(?:&gt;)')		// > -> &gt;
 	('["(]','(?:&quot;|"|\\()')
 	('[")]','(?:&quot;|"|\\))')
 	();
-block.code=replace(/^( {4}[^\n]+(?:(?:(?:<[^>]*>)+\n?)+ {4}[^\n]+)*)/) 	// we don't want to consume the tag after code section, so we find code<>\ncode*
-									// can't use the generic transformation, since we want to consume the <>\n in middle
-		(/\[\^\\n\]/g, '[^<|\\n]') 			// detect all non \n and non tag characters (faster)
-		(/ /g, '(?:&nbsp;| )')				// account for escaped space 
-		();
+block.code=/^( {4}[^\n]+(?:\n+ {4}[^\n]+)*)/; 	// we don't want to consume the tag after code section, so we find code(<>\ncode)*
 	
 //generic contenteditable markdown rule transformation
-var transform=['hr','heading','lheading','def','blockquote'];
+var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
 for(var rule in transform){
 	block[transform[rule]]=replace(block[transform[rule]])			// ordering matters
-				(/</g, '(?:&lt;)')				// < -> &lt;
-				(/>/g, '(?:&gt;)')				// > -> &gt;
-				(/([^^:])\\n/g, '$1(?:(?:<[^>]*>)+\\n?)')	// \n (not [^\n] or ?:\n) -> <tag(s)> or <tag(s)>\n
+				(/([^^])\\n/g, '$1(?:(?:<[^>]*>)+\\n?)')	// \n (but not in [^\n]) -> <tag(s)> or <tag(s)>\n
 				(/\[\^\\n\]/g, '[^<|\\n]') 			// detect all non \n and non tag characters (faster)
 				//(/\[\^\\n\]/g, '.') 				// detect all non \n and non tag characters (slower)
-				(/\(\?:\\n/g, '(?=<|\\n')			// end won't consume extra \n or < anchor character
+				(/\(\?:\\n+\|\$\)/g, '(?=<|\\n+|$)')		// end won't consume extra \n or < anchor character at the end
 				(/ /g, '(?:&nbsp;| )')				// account for escaped space 
 				();
 	block[transform[rule]];
 }
 
 block.xml = '(<[^>|\n]*>)';
+
+block.blockquote = replace(block.blockquote)
+  ('def', block.def)
+  ();
 
 block._tag = '(?!(?:'
   + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code'
@@ -69,10 +82,6 @@ block.html = replace(block.html)
   ('closing', /<tag(?:"[^"]*"|'[^']*'|[^'">])*?>/)
   (/tag/g, block._tag)
   ('xml', block.xml)
-  ();
-
-block.blockquote = replace(block.blockquote)
-  ('def', block.def)
   ();
 
 /**
