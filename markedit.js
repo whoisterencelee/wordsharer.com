@@ -30,11 +30,12 @@ var block = {
 //  text: /^[^\n|<]+/
 };
 
-block.list = /^( *)(bull) [\s\S]+?(?:(?:<br>|<\/p>){2,}(?! )(?!\1bull )|\s*$)/,// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
+block.list = /^( *)(bull) [\s\S]+?(?:(?=(?:<br>(?:<\/p><p>)*<br>(?:<\/p)*))(?! )(?!\1bull )|$)/;// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
+block.list = /^( *)(bull) .+(?:(?:<br>(?:<\/p><p>)?<br>(?:<\/p>)?)(?! )(?!(\1bull ))|(?!<br>$))/;
 block.bullet = /(?:[*+-]|\d+\.)/;
-block.item=/(?=<[^>]+>)*((?:&nbsp;| )*)((?:[*+-]|\d+\.))(?:&nbsp;| ).*?(?=(?:<[^>]+>)\1\2|$)/;
+block.item=/(?:<[^>]+>)*((?:&nbsp;| )*)(bull)(?:&nbsp;| ).*?(?=(?:<[^>]+>)\1bull|$)/;
 //block.item = /(?:<[^>]+>)*( *)(bull) .*(?:(?:<br>|<\/p>)+(?!(?:<[^>]+>)*\1bull ))*/;
-block.item = replace(block.item)
+block.item = replace(block.item,'g')
   (/bull/g, block.bullet)
   ();
 
