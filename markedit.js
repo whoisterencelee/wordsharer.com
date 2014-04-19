@@ -32,8 +32,9 @@ var block = {
 
 block.list = /^( *)(bull) [\s\S]+?(?:(?:<br>|<\/p>){2,}(?! )(?!\1bull )|\s*$)/,// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
 block.bullet = /(?:[*+-]|\d+\.)/;
-block.item = /^( *)(bull) [^\n]*(?:\n(?!\1bull )[^\n]*)*/;
-block.item = replace(block.item, 'gm')
+block.item=/(?=<[^>]+>)*((?:&nbsp;| )*)((?:[*+-]|\d+\.))(?:&nbsp;| ).*?(?=(?:<[^>]+>)\1\2|$)/;
+//block.item = /(?:<[^>]+>)*( *)(bull) .*(?:(?:<br>|<\/p>)+(?!(?:<[^>]+>)*\1bull ))*/;
+block.item = replace(block.item)
   (/bull/g, block.bullet)
   ();
 
