@@ -19,8 +19,7 @@ var block = {
   nptable: noop,
   lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
   blockquote: /^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
-  list: /^( *)(bull) [\s\S]+?(?:\n{2,}(?! )(?!\1bull )\n*|\s*$)/,// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
-  //list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
+  list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
   html: /^(xml)+/,
 //  html: /^ *(?:comment|closed|closing) *(?:\n{2,}|\s*$)/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
@@ -30,11 +29,9 @@ var block = {
 //  text: /^[^\n|<]+/
 };
 
-block.list = /^( *)(bull) [\s\S]+?(?:(?=(?:<br>(?:<\/p><p>)*<br>(?:<\/p)*))(?! )(?!\1bull )|$)/;// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
-block.list = /^( *)(bull) .+(?:(?:<br>(?:<\/p><p>)?<br>(?:<\/p>)?)(?! )(?!(\1bull ))|(?!<br>$))/;
+block.list = /^(?:<p>)( *)(bull) .+?(?:(?:<\/p><p><br><\/p>)(?! |<p>\1bull )|$)/;
 block.bullet = /(?:[*+-]|\d+\.)/;
-block.item=/(?:<[^>]+>)*((?:&nbsp;| )*)(bull)(?:&nbsp;| ).*?(?=(?:<[^>]+>)\1bull|$)/;
-//block.item = /(?:<[^>]+>)*( *)(bull) .*(?:(?:<br>|<\/p>)+(?!(?:<[^>]+>)*\1bull ))*/;
+block.item=/(?:<[^>]+>)*( *)(bull) .*?(?=(?:<[^>]+>)\1bull|$)/;
 block.item = replace(block.item,'g')
   (/bull/g, block.bullet)
   ();
@@ -44,7 +41,6 @@ block.list = replace(block.list)
   ('hr', '\\n+(?=\\1?(?:[-*_] *){3,}(?:\\n+|$))')
   ('def', '\\n+(?=' + block.def.source + ')')
   ();
-
 
 //custom transformation
 block.def=replace(block.def)
@@ -59,14 +55,15 @@ block.code=/^( {4}[^\n]+(?:\n+ {4}[^\n]+)*)/; 	// we don't want to consume the t
 //generic contenteditable markdown rule transformation
 var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
 for(var rule in transform){
-	block[transform[rule]]=replace(block[transform[rule]])			// ordering matters
-				(/([^^])\\n/g, '$1(?:(?:<[^>]*>)+\\n?)')	// \n (but not in [^\n]) -> <tag(s)> or <tag(s)>\n
-				(/\[\^\\n\]/g, '[^<|\\n]') 			// detect all non \n and non tag characters (faster)
-				//(/\[\^\\n\]/g, '.') 				// detect all non \n and non tag characters (slower)
-				(/\(\?:\\n+\|\$\)/g, '(?=<|\\n+|$)')		// end won't consume extra \n or < anchor character at the end
-				(/ /g, '(?:&nbsp;| )')				// account for escaped space 
-				();
-	block[transform[rule]];
+	var markrule=block[transform[rule]];
+	markrule=replace(markrule)			// ordering matters
+			('^','^(?:<p>)')				// all rule start with <p>
+			(/([^^])\\n/g, '$1(?:(?:<[^>]*>)+\\n?)')	// \n (but not in [^\n]) -> <tag(s)> or <tag(s)>\n
+			(/\[\^\\n\]/g, '[^<|\\n]') 			// detect all non \n and non tag characters (faster)
+			//(/\[\^\\n\]/g, '.') 				// detect all non \n and non tag characters (slower)
+			(/\(\?:\\n+\|\$\)/g, '(?=<|\\n+|$)')		// end won't consume extra \n or < anchor character at the end
+			(/ /g, '(?:&nbsp;| )')				// account for escaped space 
+			();
 }
 
 block.xml = '(<[^>|\n]*>)';

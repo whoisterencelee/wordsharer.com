@@ -36,12 +36,12 @@ function wordsharer(words,options){
 	D=new htmlDiff;
 	D.clearHash();  // needed, initialize html tag hash stores
 
-	if(opt.repairHTML==0){ //used marked repair only
+	if(opt.repairHTML==0){ //no repair
 		repairHTML=function(html,node){
 			if(typeof node=='object')node.innerHTML=html;// for display only
 			return html; // return html flavor based on escaped HTML output
 		};
-	}else if(opt.repairHTML==1){ //use browser innerHTML
+	}else if(opt.repairHTML==1){ //use browser html parser/renderer
 		repairHTML=function(html,node){
 			if(typeof node=='undefined')node=CC;
 			node.innerHTML=html;// follow with innerHTML transform
@@ -110,41 +110,31 @@ function mergeWords(cb){
 
 	C.contentEditable=false;// lock up, when ever we are going to modify C, otherwise the user might see their modification disappear
 
-	//convert any markdown first
-	marked(C.innerHTML,function(e,MODIFIED){
-		if(e){
+	// first diff last STAGED with modified to mark what's changed with <ins> <del> and re-instate deleted text
+	STAGED=repairHTML(D.diff(STAGED,C.innerHTML),C);
+	
+	// TODO modify htmlDIFF to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
+	// TODO insert time modify attribute to all ins and del that doesn't already have this attribute
+
+	//getWords and merge in
+	getWords(W,function(pulled,REMOTE){
+		var error=pulled;
+		if(error){
 			C.contentEditable=true;// unlock
-			alert("The edits you entered caused a problem during markdown->html conversion, operation aborted : "+e);
-			return cb(e);
+			alert("ERROR: Cannot merge REMOTE in. "+error);
+			return cb(error);
 		}
 
-		// first diff last STAGED with modified to mark what's changed with <ins> <del> and re-instate deleted text
-		// need MODIFIED to go thur the same process as STAGED so it as close as possible before diff, 
-		STAGED=repairHTML(D.diff(STAGED,repairHTML(MODIFIED)),C);
-		
-		// TODO modify htmlDIFF to fix overlaping tags after diffs e.g. <ins><li></li><li></li></ins> should be <ins><li></li></ins> <ins><li></li></ins>
-		// TODO insert time modify attribute to all ins and del that doesn't already have this attribute
+		if(pulled===null)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);
+		// otherwise STAGED is already the latest
+		// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
 
-		//getWords and merge in
-		getWords(W,function(pulled,REMOTE){
-			var error=pulled;
-			if(error){
-				C.contentEditable=true;// unlock
-				alert("ERROR: Cannot merge REMOTE in. "+error);
-				return cb(error);
-			}
+		if(typeof cb=='function')cb(pulled,STAGED);
 
-			if(pulled===null)STAGED=repairHTML(D.diff(REMOTE,STAGED,{tagless:true}),C);
-			// otherwise STAGED is already the latest
-			// tagless so we won't get <ins><del></ins>, only merge text, the marks are already done
-
-			if(typeof cb=='function')cb(pulled,STAGED);
-
-			C.contentEditable=true;// unlock
-
-		});
+		C.contentEditable=true;// unlock
 
 	});
+
 }
 
 MAXRETRIES=4;
@@ -203,12 +193,6 @@ function submitWords(retries){
 	//commit
 		//if successful save the current HEAD
 		//otherwise try from grab the 
-}
-
-function publishWords(){
-	//TODO should sanitize C.innerHTML first
-	var validhtml="<!DOCTYPE html><html><head></head>"+C.innerHTML+"</html>";
-	repo.write('gh-pages','why-published.html',validhtml,"publish "+W+" to "+W+".html using wordsharer",function(){});
 }
 
 var timeline=[],timecss={};
@@ -385,6 +369,30 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	// still need to figure out how to handle overlapping notes
 
 	return;
+}
+
+PREMARKEDIT="";
+
+function markeditWords(){
+	if(PREMARKEDIT==""){
+		PREMARKEDIT=C.innerHTML;
+		repairHTML(D.diff(STAGED,markedit(PREMARKEDIT)),C);
+		buildTimeline();
+		whenWords();
+		document.getElementById('markeditbutton').textContent="unmarkedit";
+	}else{
+		C.innerHTML=PREMARKEDIT;
+		PREMARKEDIT="";
+		buildTimeline();
+		whenWords();
+		document.getElementById('markeditbutton').textContent="markedit";
+	}
+}
+
+function publishWords(){
+	//TODO should sanitize C.innerHTML first
+	var validhtml="<!DOCTYPE html><html><head></head>"+C.innerHTML+"</html>";
+	repo.write('gh-pages','why-published.html',validhtml,"publish "+W+" to "+W+".html using wordsharer",function(){});
 }
 
 function commentWords(mark){

@@ -51,7 +51,7 @@
 	</style>
 	<div id="content" style="float:left;padding-left:21%;padding-right:164px;outline-style:none;" contenteditable="true" onmouseup="markWords()"><!-- must be mouseup -->
 Content is inline editable<br />
-Feel free to write HTML/Markdown here and use <button>markdn</button> on the left<br />
+Feel free to write HTML/Markdown here and use <button>markdn</button> on the right<br />
 TODO: save local version with localStorage<br />
 TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js, zenpen<br />
 </div>
@@ -60,12 +60,14 @@ TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js
 	<div style="position:fixed;top:10px;right:10px;font-size:small;text-align:right;">
 		<a href="https://wordsharer.com">wordsharer</a>
 		<br />edit words and share url
-		<br /><a href="https://help.github.com/articles/github-flavored-markdown">...</a> <button onclick="C.innerHTML=marked(C.innerHTML)">markdn</button>
 		<br /><button onclick="submitWords()">submit</button>
 		<!--fix function area-->
 		<br />
 		<ul id="console" style="font-size:small;">
 		</ul>
+	</div>
+	<div style="position:fixed;bottom:10px;right:10px;font-size:small;text-align:right;">
+			<a href="https://help.github.com/articles/github-flavored-markdown">...</a> <button id="markeditbutton" onclick="markeditWords()">markedit</button>
 	</div>
 	<!--scroll area-->
         
