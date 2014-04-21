@@ -29,7 +29,8 @@ var block = {
 //  text: /^[^\n|<]+/
 };
 
-block.list = /^(?:<p>)( *)(bull) .+?(?:(?:<\/p><p><br><\/p>)(?! |<p>\1bull )|$)/;
+// TRY to make style changes as close to the text as possible
+block.list = /^( *)(bull) .+?(?:(?:<\/p><p><br><\/p>)(?! |<p>\1bull )|$)/;
 block.bullet = /(?:[*+-]|\d+\.)/;
 block.item=/(?:<[^>]+>)*( *)(bull) .*?(?=(?:<[^>]+>)\1bull|$)/;
 block.item = replace(block.item,'g')
@@ -53,15 +54,13 @@ block.def=replace(block.def)
 block.code=/^( {4}[^\n]+(?:\n+ {4}[^\n]+)*)/; 	// we don't want to consume the tag after code section, so we find code(<>\ncode)*
 	
 //generic contenteditable markdown rule transformation
-var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
+//var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
+var transform=['heading'];
 for(var rule in transform){
 	var markrule=block[transform[rule]];
 	markrule=replace(markrule)			// ordering matters
-			('^','^(?:<p>)')				// all rule start with <p>
-			(/([^^])\\n/g, '$1(?:(?:<[^>]*>)+\\n?)')	// \n (but not in [^\n]) -> <tag(s)> or <tag(s)>\n
-			(/\[\^\\n\]/g, '[^<|\\n]') 			// detect all non \n and non tag characters (faster)
-			//(/\[\^\\n\]/g, '.') 				// detect all non \n and non tag characters (slower)
-			(/\(\?:\\n+\|\$\)/g, '(?=<|\\n+|$)')		// end won't consume extra \n or < anchor character at the end
+			(/\[\^\\n\]/g, '.') 				// detect all non \n and non tag characters
+			(/\\n[\+]*/g, '(?:<br>|<p><br>|</p>)+')		// consume the linebreak
 			(/ /g, '(?:&nbsp;| )')				// account for escaped space 
 			();
 }
