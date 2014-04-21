@@ -14,10 +14,20 @@ function wordsharer(words,options){
 	opt={repairHTML:1};// defaults
 	for(var o in options){if(opt.hasOwnProperty(o))opt[o]=options[o];};
 
-	writetoken=getParameterByName("token");
-	if(typeof writetoken=="string") var gh=new Github({auth:'oauth',token:writetoken});//give personal access to repo, well repo is public anyways
-	else return alert("Need access token");
-
+	var token=getParameterByName("token");
+	if(typeof token=="string") var gh=new Github({auth:'oauth',token:token});//give personal access to repo, well repo is public anyways
+	else{
+		var gh=new Github();
+		C.contentEditable=false; // readonly
+		getWords=function(W, cb){
+			repo.req('GET',W,null,function(e,text){ // borrow github.js' XMLrequest
+		               if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
+			       cb(e,text);
+			       },'raw');
+			};
+		document.getElementById('submitWords').disabled=true;
+	};
+		
 	repo=gh.getRepo('whoisterencelee','wordsharer.com');
 
 	C=document.getElementById('content');
@@ -64,7 +74,7 @@ function wordsharer(words,options){
 		var datetimeregexp=/&datetime=[^&]+/;
 
 		var urlquery=window.location.search;
-		if(!datetimeregexp.test(urlquery))urlquery=urlquery.replace("&token=","&datetime="+timeline[timeline.length-1]+"&token=");
+		if(!datetimeregexp.test(urlquery))urlquery=urlquery.replace(/(&)|$/,function(a){return "&datetime="+timeline[timeline.length-1]+a;});
 		else urlquery=urlquery.replace(datetimeregexp,"&datetime="+timeline[timeline.length-1]);
 		history.pushState(null,null,urlquery);
 
@@ -376,7 +386,7 @@ PREMARKEDIT="";
 function markeditWords(){
 	if(PREMARKEDIT==""){
 		PREMARKEDIT=C.innerHTML;
-		repairHTML(D.diff(STAGED,markedit(PREMARKEDIT)),C);
+		repairHTML(markedit(PREMARKEDIT),C);
 		buildTimeline();
 		whenWords();
 		document.getElementById('markeditbutton').textContent="unmarkedit";
