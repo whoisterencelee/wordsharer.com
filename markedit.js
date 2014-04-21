@@ -1,7 +1,7 @@
 /**
  * markedit - a markdown parser
  * Copyright (c) 2011-2014, Christopher Jeffrey. (MIT Licensed)
- * https://github.com/chjj/markedit
+ * https://github.com/whoisterencelee/markedit
  */
 
 ;(function() {
@@ -11,7 +11,7 @@
  */
 
 var block = {
-//  newline: /^\n+/,
+  newline: /^\n+/,
   code: /^( {4}[^\n]+\n*)+/,
   fences: noop,
   hr: /^( *[-*_]){3,} *(?:\n+|$)/,
@@ -19,21 +19,31 @@ var block = {
   nptable: noop,
   lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
   blockquote: /^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
-  list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,// " bull [\s\S]+?until hit these things, except (?! ) checks for indent, (?!\1bull) checks for '* '
-  html: /^(xml)+/,
-//  html: /^ *(?:comment|closed|closing) *(?:\n{2,}|\s*$)/,
+  list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
+  html: /^ *(?:comment|closed|closing) *(?:\n{2,}|\s*$)/,
   def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
   table: noop,
-//  paragraph: /^((?:[^\n]+\n?(?!hr|heading|lheading|blockquote|tag|def))+)\n*/,
-  text: /^[^<]+/
-//  text: /^[^\n|<]+/
+  paragraph: /^((?:[^\n]+\n?(?!hr|heading|lheading|blockquote|tag|def))+)\n*/,
+  text: /^[^\n]+/
 };
 
-// TRY to make style changes as close to the text as possible
-block.list = /^( *)(bull) .+?(?:(?:<\/p><p><br><\/p>)(?! |<p>\1bull )|$)/;
+block.lheading=/^([^\n]+?)\n(?:<p>)* *(=|-){2,} *(?:\n+|$)/;
+block.blockquote=/^( *&gt;[^\n]+(\n(?:<p>)*(?!def)[^\n]+)*(?:<p><br><\/p>))/;
+
+//generic contenteditable markdown rule transformation
+//var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
+var transform=['heading','lheading','blockquote'];
+for(var rule in transform){
+	block[transform[rule]]=replace(block[transform[rule]])
+		(/\[\^\\n\]/g, '.')			// detect all non \n and non tag characters
+		(/\\n/g, '(?:<br>|</p>|\\n)')		// consume the linebreak
+		(/ /g, '(?:&nbsp;| )')			// account for escaped space
+		();
+}
+
 block.bullet = /(?:[*+-]|\d+\.)/;
-block.item=/(?:<[^>]+>)*( *)(bull) .*?(?=(?:<[^>]+>)\1bull|$)/;
-block.item = replace(block.item,'g')
+block.item = /^( *)(bull) [^\n]*(?:\n(?!\1bull )[^\n]*)*/;
+block.item = replace(block.item, 'gm')
   (/bull/g, block.bullet)
   ();
 
@@ -42,30 +52,6 @@ block.list = replace(block.list)
   ('hr', '\\n+(?=\\1?(?:[-*_] *){3,}(?:\\n+|$))')
   ('def', '\\n+(?=' + block.def.source + ')')
   ();
-
-//custom transformation
-block.def=replace(block.def)
-	('[^\\s>]+','[^\\s]+?')// dont' worry about '>' it's checked after this and it's %3E in URI
-	(/</g, '(?:&lt;)')		// < -> &lt;
-	(/>/g, '(?:&gt;)')		// > -> &gt;
-	('["(]','(?:&quot;|"|\\()')
-	('[")]','(?:&quot;|"|\\))')
-	();
-block.code=/^( {4}[^\n]+(?:\n+ {4}[^\n]+)*)/; 	// we don't want to consume the tag after code section, so we find code(<>\ncode)*
-	
-//generic contenteditable markdown rule transformation
-//var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
-var transform=['heading'];
-for(var rule in transform){
-	var markrule=block[transform[rule]];
-	markrule=replace(markrule)			// ordering matters
-			(/\[\^\\n\]/g, '.') 				// detect all non \n and non tag characters
-			(/\\n[\+]*/g, '(?:<br>|<p><br>|</p>)+')		// consume the linebreak
-			(/ /g, '(?:&nbsp;| )')				// account for escaped space 
-			();
-}
-
-block.xml = '(<[^>|\n]*>)';
 
 block.blockquote = replace(block.blockquote)
   ('def', block.def)
@@ -81,7 +67,15 @@ block.html = replace(block.html)
   ('closed', /<(tag)[\s\S]+?<\/\1>/)
   ('closing', /<tag(?:"[^"]*"|'[^']*'|[^'">])*?>/)
   (/tag/g, block._tag)
-  ('xml', block.xml)
+  ();
+
+block.paragraph = replace(block.paragraph)
+  ('hr', block.hr)
+  ('heading', block.heading)
+  ('lheading', block.lheading)
+  ('blockquote', block.blockquote)
+  ('tag', '<' + block._tag)
+  ('def', block.def)
   ();
 
 /**
@@ -96,7 +90,14 @@ block.normal = merge({}, block);
 
 block.gfm = merge({}, block.normal, {
   fences: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n+|$)/,
+  paragraph: /^/
 });
+
+block.gfm.paragraph = replace(block.paragraph)
+  ('(?!', '(?!'
+    + block.gfm.fences.source.replace('\\1', '\\2') + '|'
+    + block.list.source.replace('\\1', '\\3') + '|')
+  ();
 
 /**
  * GFM + Tables Block Grammar
@@ -172,7 +173,6 @@ Lexer.prototype.token = function(src, top, bq) {
     , l;
 
   while (src) {
-    /*
     // newline
     if (cap = this.rules.newline.exec(src)) {
       src = src.substring(cap[0].length);
@@ -182,13 +182,11 @@ Lexer.prototype.token = function(src, top, bq) {
         });
       }
     }
-    */
 
     // code
     if (cap = this.rules.code.exec(src)) {
       src = src.substring(cap[0].length);
-      cap[0]=cap[0].replace(/(?:<[^>]*>)+/g, '\n');
-      cap = cap[0].replace(/^(?:&nbsp;| ){4}/gm, '');
+      cap = cap[0].replace(/^ {4}/gm, '');
       this.tokens.push({
         type: 'code',
         text: !this.options.pedantic
@@ -422,6 +420,18 @@ Lexer.prototype.token = function(src, top, bq) {
 
       this.tokens.push(item);
 
+      continue;
+    }
+
+    // top-level paragraph
+    if (top && (cap = this.rules.paragraph.exec(src))) {
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'paragraph',
+        text: cap[1].charAt(cap[1].length - 1) === '\n'
+          ? cap[1].slice(0, -1)
+          : cap[1]
+      });
       continue;
     }
 
@@ -815,6 +825,10 @@ Renderer.prototype.listitem = function(text) {
   return '<li>' + text + '</li>\n';
 };
 
+Renderer.prototype.paragraph = function(text) {
+  return '<p>' + text + '</p>\n';
+};
+
 Renderer.prototype.table = function(header, body) {
   return '<table>\n'
     + '<thead>\n'
@@ -1060,8 +1074,11 @@ Parser.prototype.tok = function() {
         : this.token.text;
       return this.renderer.html(html);
     }
+    case 'paragraph': {
+      return this.renderer.paragraph(this.inline.output(this.token.text));
+    }
     case 'text': {
-      return this.parseText();
+      return this.renderer.paragraph(this.parseText());
     }
   }
 };
@@ -1197,7 +1214,7 @@ function markedit(src, opt, callback) {
     if (opt) opt = merge({}, markedit.defaults, opt);
     return Parser.parse(Lexer.lex(src, opt), opt);
   } catch (e) {
-    e.message += '\nPlease report this to https://github.com/chjj/markedit.';
+    e.message += '\nPlease report this to https://github.com/whoisterencelee/markedit.';
     if ((opt || markedit.defaults).silent) {
       return '<p>An error occured:</p><pre>'
         + escape(e.message + '', true)
