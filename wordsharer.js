@@ -17,13 +17,14 @@ function wordsharer(words,options){
 	var token=getParameterByName("token");
 	if(typeof token=="string") var gh=new Github({auth:'oauth',token:token});//give personal access to repo, well repo is public anyways
 	else{
-		var gh=new Github();
-		C.contentEditable=false; // readonly
-		getWords=function(W, cb){
-			repo.req('GET',W,null,function(e,text){ // borrow github.js' XMLrequest
-		               if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
-			       cb(e,text);
-			       },'raw');
+		var gh=new Github({});
+		getWords=function(W, cb, C){
+			repo.req('GET',U,null,function(e,text){ // borrow github.js' XMLrequest
+				if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
+				repairHTML(text,C);
+				cb(e,text);
+				},'raw');
+				C.contentEditable=false; // readonly
 			};
 		document.getElementById('submitWords').disabled=true;
 	};
