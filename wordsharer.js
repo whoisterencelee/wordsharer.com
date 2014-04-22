@@ -19,12 +19,12 @@ function wordsharer(words,options){
 	else{
 		var gh=new Github({});
 		getWords=function(W, cb, C){
-			repo.req('GET',U,null,function(e,text){ // borrow github.js' XMLrequest
+			repo.req('GET',W,null,function(e,text){ // borrow github.js' XMLrequest
 				if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
 				repairHTML(text,C);
 				cb(e,text);
 				},'raw');
-				C.contentEditable=false; // readonly
+				if(!offline)C.contentEditable=false; // readonly
 			};
 		document.getElementById('submitWords').disabled=true;
 	};
@@ -39,8 +39,7 @@ function wordsharer(words,options){
 	if(W=="null.md" || W.length==0)return;
 
 	offline=getParameterByName("offline");
-
-	U='.//'+W;// allows offline file load
+	if(offline!=null)W='.//'+W;// allows offline file load
 
 	con=document.getElementById('console');
 

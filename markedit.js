@@ -66,7 +66,7 @@ block.paragraph = replace(block.paragraph)
 
 // custom transform
 block.code=/^( {4}.+?(?:\n{2,}|$))+/;
-block.lheading=/^([^\n]+?)\n(?:<p>)* *(=|-){2,} *(?:\n+|$)/;
+block.lheading=/^([^\n]+(?=\n))(?:<p>)* *(=|-){2,} *(?:\n+|$)/;
 block.blockquote=/^ *&gt;[^\n]+?(?:\n{2,}|$)/; // look until there is just linebreak on the line, TODO what about def
 block.def=/^ *\[([^\]]+)\]: *(?:&lt;)?([^\s]+?)(?:&gt;)?(?: +(?:&quot;|"|\\()([^\n]+)(?:&quot;|"|\\)))? *(?:\n+|$)/; // don't worry about the '>' it's checked for and it's %3E in URI
 block.html=/^(<[^>]*>)+/;
@@ -80,11 +80,11 @@ block.list = replace(block.list)
 
 // generic contenteditable markdown rule transformation
 //var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
-var transform=['code','hr','heading','lheading','blockquote','def'];
+var transform=['code','hr','heading','lheading','blockquote','def','text'];
 for(var rule in transform){
 	block[transform[rule]]=replace(block[transform[rule]])
-		(/\[\^\\n\]/g, '.')			// detect all non \n and non tag characters
-		(/\\n/g, '(?:<br>|</p>|\\n)')		// consume the linebreak
+		(/\[\^\\n\]\+/g, '.+(?!<br>|</p>)')			// detect all non \n and non tag characters
+		(/\\n/g, '(?:<br>|</p>)')		// consume the linebreak
 		(/ /g, '(?:&nbsp;| )')			// account for escaped space
 		();
 }
@@ -1091,7 +1091,8 @@ Parser.prototype.tok = function() {
       return this.renderer.paragraph(this.inline.output(this.token.text));
     }
     case 'text': {
-      return this.renderer.paragraph(this.parseText());
+//      return this.renderer.paragraph(this.parseText());
+      return this.parseText();
     }
   }
 };
