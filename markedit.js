@@ -27,20 +27,6 @@ var block = {
   text: /^[^\n]+/
 };
 
-block.lheading=/^([^\n]+?)\n(?:<p>)* *(=|-){2,} *(?:\n+|$)/;
-block.blockquote=/^( *&gt;[^\n]+(\n(?:<p>)*(?!def)[^\n]+)*(?:<p><br><\/p>))/;
-
-//generic contenteditable markdown rule transformation
-//var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
-var transform=['heading','lheading','blockquote'];
-for(var rule in transform){
-	block[transform[rule]]=replace(block[transform[rule]])
-		(/\[\^\\n\]/g, '.')			// detect all non \n and non tag characters
-		(/\\n/g, '(?:<br>|</p>|\\n)')		// consume the linebreak
-		(/ /g, '(?:&nbsp;| )')			// account for escaped space
-		();
-}
-
 block.bullet = /(?:[*+-]|\d+\.)/;
 block.item = /^( *)(bull) [^\n]*(?:\n(?!\1bull )[^\n]*)*/;
 block.item = replace(block.item, 'gm')
@@ -78,6 +64,31 @@ block.paragraph = replace(block.paragraph)
   ('def', block.def)
   ();
 
+// custom transform
+block.code=/^( {4}.+?(?:\n{2,}|$))+/;
+block.lheading=/^([^\n]+?)\n(?:<p>)* *(=|-){2,} *(?:\n+|$)/;
+block.blockquote=/^ *&gt;[^\n]+?(?:\n{2,}|$)/; // look until there is just linebreak on the line, TODO what about def
+block.def=/^ *\[([^\]]+)\]: *(?:&lt;)?([^\s]+?)(?:&gt;)?(?: +(?:&quot;|"|\\()([^\n]+)(?:&quot;|"|\\)))? *(?:\n+|$)/; // don't worry about the '>' it's checked for and it's %3E in URI
+block.html=/^(<[^>]*>)+/;
+block.paragraph=noop;
+block.list=/^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/;
+block.list = replace(block.list)
+  (/bull/g, block.bullet)
+  ('hr', '\\n+(?=\\1?(?:[-*_] *){3,}(?:\\n+|$))')
+  ('def', '\\n+(?=' + block.def.source + ')')
+  ();
+
+// generic contenteditable markdown rule transformation
+//var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
+var transform=['code','hr','heading','lheading','blockquote','def'];
+for(var rule in transform){
+	block[transform[rule]]=replace(block[transform[rule]])
+		(/\[\^\\n\]/g, '.')			// detect all non \n and non tag characters
+		(/\\n/g, '(?:<br>|</p>|\\n)')		// consume the linebreak
+		(/ /g, '(?:&nbsp;| )')			// account for escaped space
+		();
+}
+
 /**
  * Normal Block Grammar
  */
@@ -90,14 +101,16 @@ block.normal = merge({}, block);
 
 block.gfm = merge({}, block.normal, {
   fences: /^ *(`{3,}|~{3,}) *(\S+)? *\n([\s\S]+?)\s*\1 *(?:\n+|$)/,
-  paragraph: /^/
+//  paragraph: /^/
 });
 
+/*
 block.gfm.paragraph = replace(block.paragraph)
   ('(?!', '(?!'
     + block.gfm.fences.source.replace('\\1', '\\2') + '|'
     + block.list.source.replace('\\1', '\\3') + '|')
   ();
+*/
 
 /**
  * GFM + Tables Block Grammar
@@ -278,7 +291,7 @@ Lexer.prototype.token = function(src, top, bq) {
         type: 'blockquote_start'
       });
 
-      cap = cap[0].replace(/^ *> ?/gm, '');
+      cap = cap[0].replace(/^ *&gt; ?/gm, '');
 
       // Pass `top` to keep the current
       // "toplevel" state. This is exactly
