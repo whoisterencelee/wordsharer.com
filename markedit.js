@@ -65,10 +65,10 @@ block.paragraph = replace(block.paragraph)
   ();
 
 // custom transform
-block.code=/^( {4}.+?(?:\n{2,}|$))+/;
-block.lheading=/^([^\n]+(?=\n))(?:<p>)* *(=|-){2,} *(?:\n+|$)/;
-block.blockquote=/^ *&gt;[^\n]+?(?:\n{2,}|$)/; // look until there is just linebreak on the line, TODO what about def
-block.def=/^ *\[([^\]]+)\]: *(?:&lt;)?([^\s]+?)(?:&gt;)?(?: +(?:&quot;|"|\\()([^\n]+)(?:&quot;|"|\\)))? *(?:\n+|$)/; // don't worry about the '>' it's checked for and it's %3E in URI
+block.code=/^( {4}[^\n]+(?:\n(?:<p>)?)*)+/;
+block.lheading=/^([^\n]+)\n(?:<p>)? *(=|-){2,} *(?:\n+|$)/;
+block.blockquote=/^( *&gt;[^\n]+(\n[^\n]+)*(?:\n|<p>)*)+/; // look until there is just linebreak on the line, TODO what about def
+block.def=/^ *\[([^\]]+)\]: *(?:&lt;)?([^\s]+?)(?:&gt;)?(?: +(?:&quot;|"|\()([^\n]+)(?:&quot;|"|\)))? *(?:\n+|$)/; // don't worry about the '>' it's checked for and it's %3E in URI
 block.html=/^(<[^>]*>)+/;
 block.paragraph=noop;
 block.list=/^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/;
@@ -77,17 +77,26 @@ block.list = replace(block.list)
   ('hr', '\\n+(?=\\1?(?:[-*_] *){3,}(?:\\n+|$))')
   ('def', '\\n+(?=' + block.def.source + ')')
   ();
+block.item=/( *)(bull) [^\n]*(?:\n(?!(?:<p>)?\1bull )[^\n]*)*/;
+block.item = replace(block.item, 'g')                                                                                                                                               
+  (/bull/g, block.bullet)                                                                                                                                                            
+  ();
 
 // generic contenteditable markdown rule transformation
 //var transform=['code','hr','heading','lheading','blockquote','def','list','item'];
-var transform=['code','hr','heading','lheading','blockquote','def','text'];
+var transform=['code','hr','heading','lheading','blockquote','def','text','list','item'];
 for(var rule in transform){
-	block[transform[rule]]=replace(block[transform[rule]])
-		(/\[\^\\n\]\+/g, '.+(?!<br>|</p>)')			// detect all non \n and non tag characters
+	var transformrule=block[transform[rule]];
+	var regexopt=/[gmi]+$/.exec(transformrule.toString()); 
+	block[transform[rule]]=replace( transformrule, regexopt? regexopt[0]:null )
+		(/\[\^\\n\]/g, '(?:(?!<br>|</p>).)')	// detect all non linebreak character
 		(/\\n/g, '(?:<br>|</p>)')		// consume the linebreak
 		(/ /g, '(?:&nbsp;| )')			// account for escaped space
 		();
 }
+
+// make block.item gobal again, because generic above destroyed the g
+block.item = replace(block.item, 'g')();
 
 /**
  * Normal Block Grammar
@@ -199,7 +208,7 @@ Lexer.prototype.token = function(src, top, bq) {
     // code
     if (cap = this.rules.code.exec(src)) {
       src = src.substring(cap[0].length);
-      cap = cap[0].replace(/^ {4}/gm, '');
+      cap = cap[0].replace(/(?:<br>|<\/p>|<p>|\n)+/g, '\n').replace(/(?:&nbsp;| ){4}/gm, '');
       this.tokens.push({
         type: 'code',
         text: !this.options.pedantic
@@ -266,6 +275,7 @@ Lexer.prototype.token = function(src, top, bq) {
     // lheading
     if (cap = this.rules.lheading.exec(src)) {
       src = src.substring(cap[0].length);
+      cap[1] = cap[1].replace(/(?:<\/p>|<p>|\n)+/g, '');
       this.tokens.push({
         type: 'heading',
         depth: cap[2] === '=' ? 1 : 2,
@@ -291,7 +301,7 @@ Lexer.prototype.token = function(src, top, bq) {
         type: 'blockquote_start'
       });
 
-      cap = cap[0].replace(/^ *&gt; ?/gm, '');
+      cap = cap[0].replace(/(?:<\/p>|<p>|\n)+/g, '\n').replace(/^ *&gt; ?/gm, '');
 
       // Pass `top` to keep the current
       // "toplevel" state. This is exactly
@@ -328,7 +338,7 @@ Lexer.prototype.token = function(src, top, bq) {
         // Remove the list item's bullet
         // so it is seen as the next token.
         space = item.length;
-        item = item.replace(/^ *([*+-]|\d+\.) +/, '');
+        item = item.replace(/^(?:&nbsp;| )*([*+-]|\d+\.)(?:&nbsp;| )+/, '');
 
         // Outdent whatever the
         // list item contains. Hacky.
