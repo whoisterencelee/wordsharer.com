@@ -90,7 +90,7 @@ for(var rule in transform){
 	var regexopt=/[gmi]+$/.exec(transformrule.toString()); 
 	block[transform[rule]]=replace( transformrule, regexopt? regexopt[0]:null )
 		(/\[\^\\n\]/g, '(?:(?!<br>|</p>).)')	// detect all non linebreak character
-		(/\\n/g, '(?:<br>|</p>)')		// consume the linebreak
+		(/\\n/g, '(?:<br>|</p>|\\n)')		// consume the linebreak
 		(/ /g, '(?:&nbsp;| )')			// account for escaped space
 		();
 }

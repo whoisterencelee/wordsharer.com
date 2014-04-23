@@ -12,5 +12,5 @@
 <p>[id]: http://example.com/&nbsp; "Optional Title Here"</p>
 <p>this is a [link][id]</p>
 <p>stop</p>
-<p>* item1</p><p>&nbsp;* item2</p><p>* item3</p>
+<p>* item1</p><p>&nbsp;* item2</p><p>* item3</p><p>still item3</p>
 <p>stop</p>
