@@ -65,7 +65,8 @@ block.paragraph = replace(block.paragraph)
   ();
 
 // custom transform
-block.code=/^( {4}[^\n]+(?:\n(?:<p>)?)*)+/;
+//block.code=/^( {4}[^\n]+(?:\n(?:<p>)?)*)+/;
+block.code=noop; // this get's messy when you're in list
 block.lheading=/^([^\n]+)\n(?:<p>)? *(=|-){2,} *(?:\n+|$)/;
 block.blockquote=/^( *&gt;[^\n]+(\n[^\n]+)*(?:\n|<p>)*)+/; // look until there is just linebreak on the line, TODO what about def
 block.def=/^ *\[([^\]]+)\]: *(?:&lt;)?([^\s]+?)(?:&gt;)?(?: +(?:&quot;|"|\()([^\n]+)(?:&quot;|"|\)))? *(?:\n+|$)/; // don't worry about the '>' it's checked for and it's %3E in URI
@@ -87,10 +88,11 @@ block.item = replace(block.item, 'g')
 var transform=['code','hr','heading','lheading','blockquote','def','text','list','item'];
 for(var rule in transform){
 	var transformrule=block[transform[rule]];
+	if(transformrule==noop)continue;
 	var regexopt=/[gmi]+$/.exec(transformrule.toString()); 
 	block[transform[rule]]=replace( transformrule, regexopt? regexopt[0]:null )
 		(/\[\^\\n\]/g, '(?:(?!<br>|</p>).)')	// detect all non linebreak character
-		(/\\n/g, '(?:<br>|</p>|\\n)')		// consume the linebreak
+		(/\\n/g, '(?:<br>|</p>)')		// consume the linebreak
 		(/ /g, '(?:&nbsp;| )')			// account for escaped space
 		();
 }
@@ -198,11 +200,17 @@ Lexer.prototype.token = function(src, top, bq) {
     // newline
     if (cap = this.rules.newline.exec(src)) {
       src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'text',
+        text: cap[0]
+      }); // save as text so when we diff it's still there
+      /*
       if (cap[0].length > 1) {
         this.tokens.push({
           type: 'space'
         });
       }
+      */
     }
 
     // code
@@ -988,7 +996,7 @@ Parser.prototype.parseText = function() {
   var body = this.token.text;
 
   while (this.peek().type === 'text') {
-    body += '\n' + this.next().text;
+    body += this.next().text;// body += '\n' + this.next().text;// why continuous text need a newline???
   }
 
   return this.inline.output(body);
