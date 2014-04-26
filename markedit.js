@@ -518,6 +518,11 @@ inline.reflink = replace(inline.reflink)
   ('inside', inline._inside)
   ();
 
+// include comment
+inline.comment = /^\/\/(?:&nbsp;| )*(.+?)(?:&nbsp;| )*(?:(?:\/\/|$)|(?=<br>|<p>))/;
+inline.text = /^[\s\S]+?(?=[\\<!\[_*`]|\/\/| {2,}\n|$)/
+
+
 /**
  * Normal Inline Grammar
  */
@@ -717,6 +722,17 @@ InlineLexer.prototype.output = function(src) {
     if (cap = this.rules.del.exec(src)) {
       src = src.substring(cap[0].length);
       out += this.renderer.del(this.output(cap[1]));
+      continue;
+    }
+
+    // comment
+    if (cap = this.rules.comment.exec(src)) {
+      src = src.substring(cap[0].length);
+      if(typeof cap[1]!='undefined'){
+	      out += '<span class="notes" contenteditable="false"><span contenteditable="true">'+
+			this.output(cap[1])+
+			'</span></span>';
+      }
       continue;
     }
 
