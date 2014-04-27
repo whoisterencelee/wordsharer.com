@@ -27,7 +27,8 @@
 	<!-- ANNOTATION (reserved space)-->
 
 	<div style="position:fixed;width:20%;height:100%;top:10px;font-size:small;color:gray;" onclick="annotateWords()">
-		mark position click left margin to annotate or use //markedit//
+		<div class="hint">mark position click left margin to annotate or use //markedit//</div>
+		<!--<div style="float:left;width:0;height:0;border-left:4px solid grey;border-top:4px solid grey;border-right:4px solid transparent;border-bottom:4px solid transparent;"></div>-->
 	</div>
 
 	<!-- CONTENT -->
@@ -40,6 +41,7 @@
 	span.notes{position:absolute;left:10px;width:20%;padding-right:10px;z-index:10;color:gray;font-size:small;font-style:italic;font-weight:300;}
 	span.notes span{outline-style:none;}
 	pre{white-space:normal;word-wrap:break-word;}
+	div.hint{display:none;color:blue;}
 
 	</style>
 	<div id="content" style="float:left;padding-left:21%;padding-right:164px;outline-style:none;" contenteditable="true" onmouseup="markWords()"><!-- must be mouseup -->
@@ -51,13 +53,26 @@ TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js
 
 	<!-- FIXED RIGHT SIDE -->
 	<div style="position:fixed;top:10px;right:10px;font-size:small;text-align:right;">
-		<a href="https://wordsharer.com" style="color:black;">
-			<div>
-			<!-- logo -->
-			<div style="float:right;">
-				<img src="./wordsharer-logo.png">
-			</div>
-		</a>
+		<!-- logo -->
+		<style>
+		@keyframes bordershow {
+		0% { margin: 0px; padding: 4px; border: 1px dotted #000000; }
+		50% { padding: 3px; margin: 1px; border: 1px dotted #000000; }
+		100% { border: 1px dotted transparent; padding: 0px; margin: 4px; }
+		}
+		div#logo img {
+		     border: 1px dotted transparent;
+		     margin: 1px;
+		     padding: 3px;
+		     animation-direction: normal;
+		     animation-duration: 1s;
+		     animation-iteration-count: 8;
+		     animation-name: bordershow;
+		}
+		</style>
+		<div id="logo" style="float:right;">
+			<img src="./wordsharer-logo.png">
+		</div>
 		<br /><button id="submitWords" onclick="submitWords()">submit</button>
 		<!--fix function area-->
 		<br />

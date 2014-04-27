@@ -404,6 +404,14 @@ function markeditWords(){
 	}
 }
 
+function guihinting(show){
+	var hints=document.getElementsByClassName("hint");
+	var show=hints.length;
+	while(show--){
+		hints[show].style.display=show?"block":"none";
+	}
+}
+
 function publishWords(){
 	//TODO should sanitize C.innerHTML first
 	var validhtml="<!DOCTYPE html><html><head></head>"+C.innerHTML+"</html>";
