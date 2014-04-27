@@ -335,6 +335,11 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 	commentbox.className="notes";
 	commentbox.appendChild(comment);
 
+	// mark spot
+	var markspot=document.createElement("span");
+	markspot.className="mark";
+	markspot.appendChild(commentbox);
+
 	// a mark line can be created with an additional span using border-top/left, set position abs and width instead of left
 	// but width can change, so not yet workable
 
@@ -345,13 +350,13 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 		var end=text.length;
 		while(offset<end){if(text[offset]==" ")break;offset++;};
 		seafloor.insertBefore(document.createTextNode(text.slice(0,offset)),anchor);
-		seafloor.insertBefore(commentbox,anchor);
+		seafloor.insertBefore(markspot,anchor);
 		seafloor.replaceChild(document.createTextNode(text.slice(offset)),anchor);
 	}else{
 		seafloor=anchor;
 		anchor=anchor.childNodes[0];
 		if(!anchor)anchor=null;
-		seafloor.insertBefore(commentbox,anchor);
+		seafloor.insertBefore(markspot,anchor);
 	};
 
 	// all that dom work just for this
@@ -372,7 +377,7 @@ function annotateWords(){// set to trigger onclick in some area outside of conte
 
 	// undo if no comment entered
 	comment.onblur=function(){
-		if(/^Please enter your comment here/.test(comment.textContent))seafloor.removeChild(commentbox);
+		if(/^Please enter your comment here/.test(comment.textContent))seafloor.removeChild(markspot);
 		// no need to recombine TextNodes, they are recombined automatically
 	};
 

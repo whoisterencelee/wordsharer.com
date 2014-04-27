@@ -729,9 +729,9 @@ InlineLexer.prototype.output = function(src) {
     if (cap = this.rules.comment.exec(src)) {
       src = src.substring(cap[0].length);
       if(typeof cap[1]!='undefined'){
-	      out += '<span class="notes" contenteditable="false"><span contenteditable="true">'+
+	      out += '<span class="mark"><span class="notes" contenteditable="false"><span contenteditable="true">'+
 			this.output(cap[1])+
-			'</span></span>';
+			'</span></span></span>';
       }
       continue;
     }
