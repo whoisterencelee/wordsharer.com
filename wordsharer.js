@@ -404,12 +404,14 @@ function markeditWords(){
 	}
 }
 
-function guihinting(show){
+var showhint=true;
+function helpWords(){
 	var hints=document.getElementsByClassName("hint");
 	var show=hints.length;
 	while(show--){
-		hints[show].style.display=show?"block":"none";
+		hints[show].style.display=showhint?"block":"none";
 	}
+	showhint=!showhint;
 }
 
 function publishWords(){
