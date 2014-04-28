@@ -19,7 +19,7 @@
     <script src="./htmlDiff/diff_match_patch.js"></script>
     <script src="./htmlDiff/htmlDiff.js"></script>
     <script src="./wordsharer.js"></script>
-    <title>WHY wordsharer by whoisterencelee</title>
+    <title>wordsharer</title>
   </head>
 
   <body style="font-family:sans-serif;font-weight:300;line-height:1.5;" onload="wordsharer()">
@@ -27,7 +27,7 @@
 	<!-- ANNOTATION (reserved space)-->
 
 	<div style="position:fixed;width:20%;height:100%;top:10px;font-size:small;color:gray;" onclick="annotateWords()">
-		<div class="hint">mark position click left margin to annotate or use //markedit//</div>
+		<div class="hint">mark position in content<br/>click left margin to annotate<br/>or use //markedit//<br/>typically used to explain deletion</div>
 		<!--<div style="float:left;width:0;height:0;border-left:4px solid grey;border-top:4px solid grey;border-right:4px solid transparent;border-bottom:4px solid transparent;"></div>-->
 	</div>
 
@@ -41,15 +41,27 @@
 	span.notes{position:absolute;left:10px;width:20%;padding-right:10px;z-index:10;color:gray;font-size:small;font-style:italic;font-weight:300;}
 	span.notes span{outline-style:none;}
 	pre{white-space:normal;word-wrap:break-word;}
-	div.hint{display:none;color:blue;}
 
+	div.hint{display:none;color:blue;}
+	table td{border:1px solid;}
+	table th{border:1px solid;}
+	
 	</style>
-	<div id="content" style="float:left;padding-left:21%;padding-right:164px;outline-style:none;" contenteditable="true" onmouseup="markWords()"><!-- must be mouseup -->
-Content is inline editable<br />
-Feel free to write HTML/Markdown here and use <button>markdn</button> on the right<br />
-TODO: save local version with localStorage<br />
-TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js, zenpen<br />
-</div>
+	<div style="float:left;padding-left:21%;padding-right:164px;" contenteditable="false">
+		<div class="hint">Content is inline editable and style is implemented with markedit (bottom right button)
+		<!--
+		, for example:<br/>
+			<table style="border:1px solid;border-collapse:collapse"><tbody>
+				<tr><th>markedit</th><th>style</th></tr>
+				<tr><td>#title</td><td><h1>title</h1></td></tr>
+				<tr><td>* list item 1<br />&nbsp;* list item 2<br /> * list item 3<br /></td><td><ul><li>list item 1<ul><li>list item 2</li></ul></li><li>list item 3</li></ul></td></tr>
+			</tbody></table>
+		-->
+		</div>
+		<div id="content" style="outline-style:none;" contenteditable="true" onmouseup="markWords()"><!-- must be mouseup -->
+	<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+		</div>
+	</div>
 
 	<!-- FIXED RIGHT SIDE -->
 	<div style="position:fixed;top:10px;right:10px;font-size:small;text-align:right;">
@@ -71,8 +83,10 @@ TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js
 			0% { width: 0px;display:block;}
 			100% { width: 60px;color:black;}
 		}
-		div#logo:hover > button{ display: block; }
-		div#logo:focus > button{ display: block; }
+		div#logo:hover button{ display: block; }
+		div#logo:focus button{ display: block; }
+		div#logo:hover div{ display: block; }
+		div#logo:focus div{ display: block; }
 		div#logo button{
 			float:left;
 			font-size:small;
@@ -81,20 +95,31 @@ TODO: Mouse highlighting to be implemented later with github.com/pen , grande.js
 			margin-right:10px;
 			display:none;
 		}
+		div#logo div{
+			width:60px;
+			float:left;
+			font-size:xx-small;
+			margin-right:10px;
+			display:none;
+		}
 		</style>
-		<div id="logo" style="float:right;">
+		<div id="logo">
 			<button id="helpWords" onclick="helpWords()">help</button>
-			<button id="submitWords" onclick="submitWords()">submit</button>
+			<div>
+				<button id="submitWords" onclick="submitWords()">submit</button>
+				<!--<input id="override" type="checkbox" style="vertical-align:middle;">override</input>-->
+			</div>
 			<img src="./wordsharer-logo.png">
 		</div>
+		<div class="hint" style="top:50%;width:164px;position:fixed;right:10px;">safely scroll on<br/> right margin</div>
 		<!--fix function area-->
 		<br />
 		<ul id="console" style="font-size:small;">
 		</ul>
 
-		<div style="position:fixed;bottom:10px;right:10px;font-size:small;text-align:right;">
+		<div style="width:164px;position:fixed;bottom:10px;right:10px;font-size:small;text-align:right;">
 			<div class="hint">
-				<a href="https://help.github.com/articles/github-flavored-markdown">markdown</a> for contenteditable
+				markedit is <a href="https://help.github.com/articles/github-flavored-markdown">markdown</a> for contenteditable
 			</div>
 			<button id="markeditbutton" onclick="markeditWords()">markedit</button>
 		</div>

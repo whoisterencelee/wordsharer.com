@@ -34,9 +34,10 @@ function wordsharer(words,options){
 	C=document.getElementById('content');
 	var CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
 
-	if(typeof words=='string')W=words;
-	else W=getParameterByName("words")+'.md';
-	if(W=="null.md" || W.length==0)return;
+	if(typeof words!='string')words=getParameterByName("words");
+	if(words=="null" || words.length==0)return;
+	document.title=words;
+	W=words+'.md';
 
 	offline=getParameterByName("offline");
 	if(offline!=null)W='.//'+W;// allows offline file load
