@@ -86,30 +86,29 @@
 		div#logo:focus div{ display: block; }
 		div#logo button{
 			float:left;
-			font-size:small;
 			width:60px;
 			height:60px;
 			margin-right:10px;
 			display:none;
 		}
 		div#logo div{
-			width:60px;
 			float:left;
 			font-size:xx-small;
-			margin-right:10px;
 			display:none;
 		}
 		</style>
-		<div id="logo">
-			<button id="newWords" onclick="newWords()">new</button>
-			<button id="helpWords" onclick="helpWords()">help</button>
-			<div>
+		<div>
+			<form id="newWordsform" onsubmit="wordsharer(document.getElementById('newWordsinput').value)" style="float:left;">
+				<input id="newWordsinput" type="text" value="why" style="text-align:right;margin-right:10px;float:left;font-size:50px;border-top:0px;border-left:0px;height:60px;width:200px;display:none;" onblur="this.style.display='none'">
+			</form>
+			<div id="logo" style="float:left;">
+				<button id="newWords" onclick="newWords()">new</button>
+				<button id="helpWords" onclick="helpWords()">help</button>
 				<button id="submitWords" onclick="submitWords()">submit</button>
-				<!--<input id="override" type="checkbox" style="vertical-align:middle;">override</input>-->
+				<img src="./wordsharer-logo.png">
 			</div>
-			<img src="./wordsharer-logo.png">
 		</div>
-		<div class="hint" style="top:50%;position:fixed;right:10px;">finger scroll<br/>on right margin</div>
+		<div class="hint" style="top:30%;position:fixed;right:10px;">finger scroll<br/>on right margin</div>
 		<!--fix function area-->
 		<br />
 		<ul id="console" style="font-size:small;">
@@ -155,7 +154,7 @@
 							     -->
 
 			</div>
-			<button id="markeditbutton" onclick="markeditWords()">markedit</button>
+			<button id="markeditbutton" style="height:60px;" onclick="markeditWords()">markedit</button>
 		</div>
 	</div>
 	<!--scroll area-->
