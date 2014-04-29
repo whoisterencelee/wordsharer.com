@@ -34,7 +34,12 @@ function wordsharer(words,options){
 	C=document.getElementById('content');
 	var CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
 
-	if(typeof words!='string')words=getParameterByName("words");
+	if(typeof words=='string'){
+		var urlquery=window.location.search;
+		urlquery.replace(/[\?&]words=[^&]+/,'');
+		urlquery.replace(/\?|$/,"?words="+words);
+		history.pushState(null,null,urlquery);
+	} else words=getParameterByName("words"); // get from url
 	if(words=="null" || words.length==0)return;
 	document.title=words;
 	W=words+'.md';
@@ -67,6 +72,18 @@ function wordsharer(words,options){
 	};
 
 	getWords(W, function(e,content){
+		if(e){
+			content="<p>creating a whole new word</p>";
+			var message="creating a whole new word"+words;
+			//create a new file
+			repo.write("gh-pages",W,content,message,function(e){
+				if(e)return errorlog("wordsharer","unable to create words "+W+" at branch gh-pages");
+				STAGED=content;
+				repairHTML(content,C);
+				C.focus();
+			});
+			return;
+		}
 		STAGED=content;
 		buildTimeline();
 		whenWords();
@@ -81,6 +98,7 @@ function wordsharer(words,options){
 
 		// TODO use browser history to implement timeline change, but this just makes things complicated...
 
+		C.focus();
 	}, C);
 
 }

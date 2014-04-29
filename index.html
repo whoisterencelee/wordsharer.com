@@ -42,22 +42,19 @@
 	span.notes span{outline-style:none;}
 	pre{white-space:normal;word-wrap:break-word;}
 
-	div.hint{display:none;color:blue;}
-	table td{border:1px solid;}
+	div.hint{display:none;color:white;background:navy;padding:5px;margin:1px;font-size:medium;font-weight:400;}
+	div.hint a{color:yellow;}
+	table td{border:1px solid;overflow:hidden;}
 	table th{border:1px solid;}
 	
 	</style>
-	<div style="float:left;padding-left:21%;padding-right:164px;" contenteditable="false">
-		<div class="hint">Content is inline editable and style is implemented with markedit (bottom right button)
-		<!--
-		, for example:<br/>
-			<table style="border:1px solid;border-collapse:collapse"><tbody>
-				<tr><th>markedit</th><th>style</th></tr>
-				<tr><td>#title</td><td><h1>title</h1></td></tr>
-				<tr><td>* list item 1<br />&nbsp;* list item 2<br /> * list item 3<br /></td><td><ul><li>list item 1<ul><li>list item 2</li></ul></li><li>list item 3</li></ul></td></tr>
-			</tbody></table>
-		-->
-		</div>
+	<div style="float:left;padding-left:21%;padding-right:164px;padding-bottom:80px;" contenteditable="false">
+		<div class="hint" style="padding-right:164px;">Edit content below, click wordsharer logo and submit to send in changes</div>
+		<div class="hint" style="padding-right:164px;">Stylize inline with markdown syntax and click markedit (bottom right corner)</div>
+		<div class="hint" style="padding-right:164px;">Bookmark URL and next visit will highlight only new updates</div>
+		<div class="hint" style="padding-right:164px;">Remove edit "token=abc..." from URL before sharing to make document readonly</div> 
+		<div class="hint" style="padding-right:164px;">Can only create new content if you have edit token</div>
+		<div class="hint" style="padding-right:164px;"><strong>Most importantly! Remember to share URL ;^)</strong></div> 
 		<div id="content" style="outline-style:none;" contenteditable="true" onmouseup="markWords()"><!-- must be mouseup -->
 	<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
 		</div>
@@ -104,6 +101,7 @@
 		}
 		</style>
 		<div id="logo">
+			<button id="newWords" onclick="newWords()">new</button>
 			<button id="helpWords" onclick="helpWords()">help</button>
 			<div>
 				<button id="submitWords" onclick="submitWords()">submit</button>
@@ -111,7 +109,7 @@
 			</div>
 			<img src="./wordsharer-logo.png">
 		</div>
-		<div class="hint" style="top:50%;width:164px;position:fixed;right:10px;">safely scroll on<br/> right margin</div>
+		<div class="hint" style="top:50%;position:fixed;right:10px;">finger scroll<br/>on right margin</div>
 		<!--fix function area-->
 		<br />
 		<ul id="console" style="font-size:small;">
@@ -119,7 +117,43 @@
 
 		<div style="width:164px;position:fixed;bottom:10px;right:10px;font-size:small;text-align:right;">
 			<div class="hint">
-				markedit is <a href="https://help.github.com/articles/github-flavored-markdown">markdown</a> for contenteditable
+			markdown syntax
+			<table style="width:100%;border:1px solid;border-collapse:collapse;font-size:xx-small;table-layout:fixed;text-align:left;">
+				<tr><td>#title</td><td><h1 style="margin:0px;">title</h1></td></tr>
+				<tr><td>**bold**</td><td><b>bold</b></td></tr>
+				<tr><td>*italic*</td><td><i>italic</i></td></tr>
+				<tr><td>`code`</td><td><pre style="margin:0px;"><code>code</code></pre></td></tr>
+				<tr><td>* item 1<br />&nbsp;* item 2<br /> * item 3<br /></td><td><ul style="margin:0px;padding-left:2em;"><li>item 1<ul style="margin:0px;padding-left:2em;"><li>item 2</li></ul></li><li>item 3</li></ul></td></tr>
+				<tr><td>[link](http://..)</td><td><a href="">link</a></td></tr>
+				<tr><td>![x](image.png)</td><td>image</td></tr>
+			</table>
+			<a href="https://help.github.com/articles/github-flavored-markdown">more ...</a>
+			<!--
+				
+			      Paragraphs are separated
+			       by a blank line.
+			        
+				 Text attributes *italic*,
+				  **bold**, `monospace`.
+				   
+				    A [link](http://example.com).
+				     
+				      Shopping list:
+				       
+				          * apples
+					     * oranges
+					        * pears
+						 
+						  Numbered list:
+						   
+						      1. apples
+						         2. oranges
+							    3. pears
+							     
+							      The rain---not the reign---in
+							       Spain.
+							     -->
+
 			</div>
 			<button id="markeditbutton" onclick="markeditWords()">markedit</button>
 		</div>
