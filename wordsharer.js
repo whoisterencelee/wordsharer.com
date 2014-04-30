@@ -36,7 +36,7 @@ function wordsharer(words,options){
 
 	if(typeof words=='string'){
 		var urlquery=window.location.search;
-		urlquery=urlquery.replace(/[\?&]words=[^&]+/,'').replace(/\?|$/,"?words="+words);
+		urlquery="?words="+words+urlquery.replace(/[\?&]words=[^&]+/,'')
 		history.pushState(null,null,urlquery);
 	} else words=getParameterByName("words"); // get from url
 	if(words==null || words.length==0){newWords();return;};
@@ -72,13 +72,13 @@ function wordsharer(words,options){
 
 	getWords(W, function(e,content){
 		if(e){
-			content="<p>creating a whole new word</p>";
+			content="<p></p>";
 			var message="creating a whole new word"+words;
 			//create a new file
 			repo.write("gh-pages",W,content,message,function(e){
 				if(e)return errorlog("wordsharer","unable to create words "+W+" at branch gh-pages");
 				STAGED=content;
-				repairHTML(content,C);
+				repairHTML("<p>creating a whole new word</p>",C);
 				C.focus();
 			});
 			return;

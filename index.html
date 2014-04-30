@@ -71,7 +71,6 @@
 		div#logo img {
 		     animation-direction: alternate;
 		     animation-duration: 1.8s;
-		     animation-delay:2s;
 		     animation-iteration-count: 6;
 		     animation-name: fadeinout;
 		     opacity: 0.25;
@@ -98,7 +97,7 @@
 		}
 		</style>
 		<div>
-			<form id="newWordsform" onsubmit="wordsharer(document.getElementById('newWordsinput').value)" style="float:left;">
+			<form id="newWordsform" onsubmit="wordsharer(document.getElementById('newWordsinput').value);return false" style="float:left;">
 				<input id="newWordsinput" type="text" value="why" style="text-align:right;margin-right:10px;float:left;font-size:50px;border-top:0px;border-left:0px;height:60px;width:200px;display:none;" onblur="this.style.display='none'">
 			</form>
 			<div id="logo" style="float:left;">
