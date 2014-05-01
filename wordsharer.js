@@ -19,7 +19,7 @@ function wordsharer(words,options){
 	else{
 		var gh=new Github({});
 		getWords=function(W, cb, C){
-			repo.req('GET',W,null,function(e,text){ // borrow github.js' XMLrequest
+			repo.req('GET',".//"+W,null,function(e,text){ // borrow github.js' XMLrequest
 				if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
 				repairHTML(text,C);
 				cb(e,text);
