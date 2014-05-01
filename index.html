@@ -97,16 +97,17 @@
 		}
 		</style>
 		<div>
-			<form id="newWordsform" onsubmit="wordsharer(document.getElementById('newWordsinput').value);return false" style="float:left;">
-				<input id="newWordsinput" type="text" value="why" style="text-align:right;margin-right:10px;float:left;font-size:50px;border-top:0px;border-left:0px;height:60px;width:200px;display:none;" onblur="this.style.display='none'">
-			</form>
-			<div id="logo" style="float:left;">
+			<div id="logo" style="float:right;">
 				<button id="newWords" onclick="newWords()">new</button>
 				<button id="helpWords" onclick="helpWords()">help</button>
 				<button id="submitWords" onclick="submitWords()">submit</button>
 				<img src="./wordsharer-logo.png">
 			</div>
+			<form id="newWordsform" onsubmit="wordsharer(document.getElementById('newWordsinput').value);return false" style="float:right;">
+				<input id="newWordsinput" type="text" value="why" style="text-align:right;margin-right:10px;font-size:50px;border-top:0px;border-left:0px;height:60px;width:200px;display:none;" onblur="this.style.display='none'">
+			</form>
 		</div>
+		<br style="clear:right;" />
 		<div class="hint" style="top:30%;position:fixed;right:10px;">finger scroll<br/>on right margin</div>
 		<!--fix function area-->
 		<br />
