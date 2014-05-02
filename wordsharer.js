@@ -35,13 +35,12 @@ function wordsharer(words,options){
 	var CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
 
 	if(typeof words=='string'){
-		words=encodeURIComponent(words);
 		var urlquery=window.location.search;
 		urlquery="?words="+words+urlquery.replace(/[\?&]words=[^&]+/,'')
 		history.pushState(null,null,urlquery);
 	} else words=getParameterByName("words"); // get from url
 	if(words==null || words.length==0){newWords();return;};
-	document.title=decodeURIComponent(words);
+	document.title=words;
 	W=words+'.md';
 
 	offline=getParameterByName("offline");
