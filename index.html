@@ -24,13 +24,6 @@
 
   <body style="font-family:sans-serif;line-height:1.5;" onload="wordsharer()">
 
-	<!-- ANNOTATION (reserved space)-->
-
-	<div style="position:absolute;width:17%;height:100%;top:10px;font-size:small;color:gray;" onclick="annotateWords()">
-		<div class="hint">mark position in content<br/>click left margin to annotate<br/>or use //markedit//<br/>typically used to explain deletion</div>
-		<!--<div style="float:left;width:0;height:0;border-left:4px solid grey;border-top:4px solid grey;border-right:4px solid transparent;border-bottom:4px solid transparent;"></div>-->
-	</div>
-
 	<!-- CONTENT -->
 	<style id="wordsharerstyle">
 
@@ -48,14 +41,23 @@
 	table th{border:1px solid;}
 	
 	</style>
-	<div style="float:left;padding-left:21%;padding-right:164px;padding-bottom:80px;" contenteditable="false">
-		<div class="hint" style="padding-right:164px;">Edit content below, click wordsharer logo and submit to send in changes</div>
-		<div class="hint" style="padding-right:164px;">Stylize inline with markdown syntax and click markedit (bottom right corner)</div>
-		<div class="hint" style="padding-right:164px;">Bookmark URL and next visit will highlight only new updates</div>
-		<div class="hint" style="padding-right:164px;">Remove edit "token=abc..." from URL before sharing to make document readonly</div> 
-		<div class="hint" style="padding-right:164px;">Can only create new content if you have edit token</div>
-		<div class="hint" style="padding-right:164px;"><strong>Most importantly! Remember to share URL ;^)</strong></div> 
-		<div id="content" style="outline-style:none;" contenteditable="true" onmouseup="markWords()"><!-- must be mouseup -->
+	<div style="padding-bottom:80px;height:100%;position:relative" contenteditable="false"><!-- position relative to anchor annotation -->
+
+		<!-- ANNOTATION (reserved space)-->
+
+		<div style="position:absolute;width:17%;height:100%;font-size:small;color:gray;" onclick="annotateWords()">
+			<div class="hint">mark position in content<br/>click left margin to annotate<br/>or use //markedit//<br/>typically used to explain deletion</div>
+			<!--<div style="float:left;width:0;height:0;border-left:4px solid grey;border-top:4px solid grey;border-right:4px solid transparent;border-bottom:4px solid transparent;"></div>-->
+		</div>
+
+		<div class="hint" style="margin-left:21%;margin-right:164px;">Edit content below, click wordsharer logo and submit to send in changes</div>
+		<div class="hint" style="margin-left:21%;margin-right:164px;">Stylize inline with markdown syntax and click markedit (bottom right corner)</div>
+		<div class="hint" style="margin-left:21%;margin-right:164px;">Bookmark URL and next visit will highlight only new updates</div>
+		<div class="hint" style="margin-left:21%;margin-right:164px;">Remove edit "token=abc..." from URL before sharing to make document readonly</div> 
+		<div class="hint" style="margin-left:21%;margin-right:164px;">Can only create new content if you have edit token</div>
+		<div class="hint" style="margin-left:21%;margin-right:164px;"><strong>Most importantly! Remember to share URL ;^)</strong></div> 
+
+		<div id="content" style="outline-style:none;padding-left:21%;padding-right:164px;" contenteditable="true" onmouseup="markWords()"><!-- must be mouseup -->
 	<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
 		</div>
 	</div>
