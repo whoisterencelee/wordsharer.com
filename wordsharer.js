@@ -177,6 +177,9 @@ function submitWords(retries){
 	if(typeof retries!='number')retries=MAXRETRIES;
 	else if(retries<1){alert("unable to submit words try again later");return;}
 
+	PREMARKEDIT="";
+	document.getElementById('markeditbutton').textContent="markedit";
+
 	// TODO fire and forget, user submit and even if there are new edits we try to save what's previously submitted
 	// but things get complicated, for example, do you show remote updates once your fire and forget?
 	// submit-merge-edit--------merge
