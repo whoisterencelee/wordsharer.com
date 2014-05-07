@@ -14,23 +14,6 @@ function wordsharer(words,options){
 	opt={repairHTML:1};// defaults
 	for(var o in options){if(opt.hasOwnProperty(o))opt[o]=options[o];};
 
-	var token=getParameterByName("token");
-	if(typeof token=="string") var gh=new Github({auth:'oauth',token:token});//give personal access to repo, well repo is public anyways
-	else{
-		var gh=new Github({});
-		getWords=function(W, cb, C){
-			repo.req('GET',".//"+W,null,function(e,text){ // borrow github.js' XMLrequest
-				if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
-				repairHTML(text,C);
-				cb(e,text);
-				},'raw');
-				if(!offline)C.contentEditable=false; // readonly
-			};
-		document.getElementById('submitWords').disabled=true;
-	};
-		
-	repo=gh.getRepo('whoisterencelee','wordsharer.com');
-
 	C=document.getElementById('content');
 	var CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
 
@@ -45,6 +28,23 @@ function wordsharer(words,options){
 
 	offline=getParameterByName("offline");
 	if(offline!=null)W='.//'+W;// allows offline file load
+
+	var token=getParameterByName("token");
+	if(typeof token=="string" && offline==null) var gh=new Github({auth:'oauth',token:token});//give personal access to repo, well repo is public anyways
+	else{
+		var gh=new Github({});
+		getWords=function(W, cb, C){
+			repo.req('GET',".//"+W,null,function(e,text){ // borrow github.js' XMLrequest
+				if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
+				repairHTML(text,C);
+				cb(e,text);
+				},'raw');
+				if(!offline)C.contentEditable=false; // readonly
+			};
+		document.getElementById('submitWords').disabled=true;
+	};
+		
+	repo=gh.getRepo('whoisterencelee','wordsharer.com');
 
 	con=document.getElementById('console');
 
@@ -256,11 +256,7 @@ function buildTimeline(tags){
 				timeline.push(DTA);
 			};
 			if(!timecssrules[TagName]){
-
-				// CSS rules for different time related tags
-				// see http://davidwalsh.name/add-rules-stylesheets
-				if(TagName=='del')timecssrules.del='del[datetime="'+DTA+'"]{background:lightgrey;} ';
-				else timecssrules[TagName]=TagName+'[datetime="'+DTA+'"]{background:orange;} ';// ins and others
+				timecssrules[TagName]=TagName+'[datetime="'+DTA+'"]'; //add CSS style properties in whenWords
 			};
 
 			/*
@@ -284,7 +280,7 @@ var timerule;
 function whenWords(){
 	//build stylesheet base on time relative to timeline
 	//buildTimeline('ins,del');// have to have ran
-	var back=timeline.length,lasttime=back-1;
+	var back=timeline.length,lasttime=back-1,past=lasttime;
 	if(back<1)return;
 
 	var time=getParameterByName("datetime");
@@ -296,24 +292,30 @@ function whenWords(){
 	var alltimerules='';
 	while(back--){
 		var timeentry=timeline[back];
-		if(time >= timeentry)break;
-
 		var timecssrules=timecss[timeentry]
 		for(var TagName in timecssrules){
 			if(!timecssrules.hasOwnProperty(TagName))continue;
 
-			alltimerules+=timecssrules[TagName];
+			if(time >= timeentry){
+				if(TagName=='del')alltimerules+=timecssrules[TagName]+'{display:none;} ';
+			}else{
+				if(TagName=='del')alltimerules+=timecssrules[TagName]+'{background:lightgrey;} ';
+				else alltimerules+=timecssrules[TagName]+'{background:orange;} ';
+				past=back;
+			}
 		}
 	};
 
-	if(back<lasttime){
-		con.innerHTML="<li>"+(lasttime-back)+" updates</li>";
-
-		if(typeof timerule=='number')csssheet.sheet.deleteRule(timerule);
-
-		// one shot insert into wordsharerstyle sheet
-		timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
+	if(past<lasttime){
+		con.innerHTML="<li>"+(lasttime-past)+" updates</li>";
 	}
+
+	// CSS rules for different time related tags
+	// see http://davidwalsh.name/add-rules-stylesheets
+	if(typeof timerule=='number')csssheet.sheet.deleteRule(timerule);
+
+	// one shot insert into wordsharerstyle sheet
+	timerule=csssheet.sheet.insertRule("@media all { "+alltimerules+" }",0);
 
 }
 
@@ -447,6 +449,19 @@ function newWords(){
 	newWordsinput.style.display="block";
 	newWordsinput.focus();
 	newWordsinput.select();
+}
+
+function overrideWords(){
+	var message="override words to "+W;
+
+	if(offline===null || typeof offline=='undefined'){
+		repo.contents_update("gh-pages", W, message, C.innerHTML, DOCSHA, function(e,resp){
+			if(e)return alert("content has been modified someone else, override not allowed, use submit instead");
+			DOCSHA=resp.content.sha;
+			buildTimeline();
+			whenWords();
+		});
+	}
 }
 
 function publishWords(){
