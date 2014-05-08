@@ -16,5 +16,5 @@
 <p>stop</p>
 <p>this is text and // this is comment // outside //comment again <b> just bold </b></p>
 <p>stop</p>
-<ul><li>item1</li><li>* item2</li></ul>
+<ul><li>item1</li><li>* item2</li><li>still item2</li></ul>
 <p>stop</p>
