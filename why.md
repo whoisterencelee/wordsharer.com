@@ -51,7 +51,7 @@ pick up this page and the sharer's own pages.<br></p><p><br></p><p></p><hr><ins 
 </ins><wbr></ul><ins datetime="2014-05-07T11:02:13.235Z">
 </ins><wbr><ins datetime="2014-05-05T14:20:47.196Z"><ol><ins datetime="2014-05-07T11:02:13.235Z">
 </ins><wbr><li><ins datetime="2014-05-07T11:02:13.235Z">how</ins><wbr><span class="mark"><span class="notes" contenteditable="false"><span contenteditable="true"><ins datetime="2014-05-07T11:02:13.235Z">fixed - two list must be separated by a linefeed</ins><wbr></span></span></span><ins datetime="2014-05-07T11:02:13.235Z"> about this</ins><wbr><wbr></li><ins datetime="2014-05-07T11:02:13.235Z">
-</ins><wbr><li><ins datetime="2014-05-07T11:02:13.235Z">anything</ins><wbr><wbr></li><li><ins datetime="2014-05-10T05:18:27.751Z">**Is this bold**</ins><wbr></li><li><ins datetime="2014-05-10T05:18:27.751Z">*how about this**</ins><wbr><br></li><wbr></ol><ol><wbr>
+</ins><wbr><li><ins datetime="2014-05-07T11:02:13.235Z">anything</ins><wbr><wbr></li><li><ins datetime="2014-05-10T05:18:27.751Z">**Is this bold**</ins><wbr></li><li><ins datetime="2014-05-10T05:18:27.751Z">*how<del datetime="2014-05-10T05:18:57.016Z"> about</del><wbr> this**</ins><wbr><br></li><wbr></ol><ol><wbr>
 </ol>
 </ins></ins><p></p>
 </ol></ins></ins><p></p>
