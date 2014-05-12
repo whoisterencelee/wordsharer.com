@@ -72,7 +72,7 @@ block.blockquote=/^( *&gt;[^\n]+(\n[^\n]+)*(?:\n|<p>)*)+/; // look until there i
 block.def=/^ *\[([^\]]+)\]: *(?:&lt;)?([^\s]+?)(?:&gt;)?(?: +(?:&quot;|"|\()([^\n]+)(?:&quot;|"|\)))? *(?:\n+|$)/; // don't worry about the '>' it's checked for and it's %3E in URI
 block.html=/^(<[^>]*>)+/;
 block.paragraph=noop;
-block.list=/^(?:<li>)?( *)(bull) [\s\S]+?(?:hr|def|(?:<\/li>\r?<li>|\n{2,})(?! )(?!\1bull )\n*|<\/ul>|\s*$)/;
+block.list=/^(?:<li>)?( *)(bull) [\s\S]+?(?=hr|def|(?:<li>|\n{2,})(?! )(?!\1bull )\n*|<\/ul>|\s*$)/;
 block.list = replace(block.list)
   (/bull/g, block.bullet)
   ('hr', '\\n+(?=\\1?(?:[-*_] *){3,}(?:\\n+|$))')
