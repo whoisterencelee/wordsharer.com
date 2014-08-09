@@ -10,6 +10,12 @@
 // htmlDiff		https://github.com/whoisterencelee/htmlDiff.git (whoisterencelee branch)
 //  google-diff-match-patch
 
+function encryption(){
+	//var encrypted = CryptoJS.AES.encrypt("Message", "Secret Passphrase");
+	//encryptedtext=encrypted.toString();
+	//CryptoJS.AES.decrypt(encryptedtext,"Secret Passphrase").toString(CryptoJS.enc.Utf8)
+}
+
 function wordsharer(words,options){
 	opt={repairHTML:1};// defaults
 	for(var o in options){if(opt.hasOwnProperty(o))opt[o]=options[o];};

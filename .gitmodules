@@ -4,3 +4,6 @@
 [submodule "htmlDiff"]
 	path = htmlDiff
 	url = https://github.com/whoisterencelee/htmlDiff.git
+[submodule "CryptoJS"]
+	path = CryptoJS
+	url = https://github.com/sytelus/CryptoJS.git
