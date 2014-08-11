@@ -9,16 +9,16 @@
 //  base64.js
 // htmlDiff		https://github.com/whoisterencelee/htmlDiff.git (whoisterencelee branch)
 //  google-diff-match-patch
+// aes.js		https://code.google.com/p/crypto-js/	
 
 function encryption(){
-	//var encrypted = CryptoJS.AES.encrypt("Message", "Secret Passphrase");
-	//encryptedtext=encrypted.toString();
+	//var encrypted = CryptoJS.AES.encrypt("Message", "Secret Passphrase").toString();
 	//CryptoJS.AES.decrypt(encryptedtext,"Secret Passphrase").toString(CryptoJS.enc.Utf8)
 }
 
 function wordsharer(words,options){
-	opt={repairHTML:1};// defaults
-	for(var o in options){if(opt.hasOwnProperty(o))opt[o]=options[o];};
+	opt={repairHTML:1,encrypt:false};// defaults
+	for(var o in options){if(options.hasOwnProperty(o))opt[o]=options[o];};
 
 	C=document.getElementById('content');
 	var CC=C.cloneNode();//borrow node C's innerHTML to be repeatly used in repairHTML
@@ -35,6 +35,8 @@ function wordsharer(words,options){
 	offline=getParameterByName("offline");
 	if(offline!=null)W='.//'+W;// allows offline file load
 
+	opt.encrypt=getParameterByName("encrypt")=='true'?true:opt.encrypt;
+
 	var token=getParameterByName("token");
 	if(typeof token=="string" && offline==null) var gh=new Github({auth:'oauth',token:token});//give personal access to repo, well repo is public anyways
 	else{
@@ -42,6 +44,7 @@ function wordsharer(words,options){
 		getWords=function(W, cb, C){
 			repo.req('GET',".//"+W,null,function(e,text){ // borrow github.js' XMLrequest
 				if(e){C.innerHTML=errorlog("Unable to load "+W,e);return;}
+				if(opt.encrypt)text=CryptoJS.AES.decrypt(text,prompt("Password:")).toString(CryptoJS.enc.Utf8);
 				repairHTML(text,C);
 				cb(e,text);
 				},'raw');
@@ -79,13 +82,7 @@ function wordsharer(words,options){
 	getWords(W, function(e,content){
 		if(e){
 			content="<p></p>";
-			var message="creating a whole new word"+words;
-			//create a new file
-			repo.write("gh-pages",W,content,message,function(e){
-				if(e)return errorlog("wordsharer","unable to create words "+W+" at branch gh-pages");
-				STAGED=content;
-				repairHTML("<p>creating a whole new word</p>",C);
-			});
+			repairHTML("<p>creating a whole new word</p>",C);
 		}
 		STAGED=content;
 		buildTimeline();
@@ -104,11 +101,13 @@ function wordsharer(words,options){
 		// TODO use browser history to implement timeline change, but this just makes things complicated...
 
 		C.focus();
+
 		var range=document.createRange()
 		range.selectNodeContents(C.childNodes[0]);
 		var selection=document.getSelection();
 		selection.removeAllRanges();
 		selection.addRange(range);
+
 		if(content!="<p></p>")selection.collapseToStart();
 	}, C);
 
@@ -135,7 +134,9 @@ function getWords(file,cb,display){
 		var sha=fileobj.sha;
 		if(sha==DOCSHA){pulled=false;return cb(pulled,STAGED);}
 		DOCSHA=sha;
-		marked(Base64.decode(fileobj.content),function(e,markup){// put md thur markdown, because we are only working with HTML
+		var text=Base64.decode(fileobj.content);
+		if(opt.encrypt)text=CryptoJS.AES.decrypt(text,prompt("Password:")).toString(CryptoJS.enc.Utf8);
+		marked(text,function(e,markup){// put md thur markdown, because we are only working with HTML
 				if(e){return cb(errorlog("getWords","marked crash on parsing "+file),STAGED);}
 				cb(pulled,repairHTML(markup,display));
 		});
@@ -201,6 +202,7 @@ function submitWords(retries){
 	mergeWords(function(e,newwords){
 
 		if(offline===null || typeof offline=='undefined'){
+			if(opt.encrypt)newwords=CryptoJS.AES.encrypt(newwords,setpassWord()).toString();
 			repo.contents_update("gh-pages", W, message, newwords, DOCSHA, function(e,resp){
 				if(e)return submitWords(--retries);
 				DOCSHA=resp.content.sha;
@@ -464,7 +466,9 @@ function overrideWords(){
 	var message="override words to "+W;
 
 	if(offline===null || typeof offline=='undefined'){
-		repo.contents_update("gh-pages", W, message, C.innerHTML, DOCSHA, function(e,resp){
+		var overwords=C.innerHTML;
+		if(opt.encrypt)overwords=CryptoJS.AES.encrypt(overwords,setpassWord()).toString();
+		repo.contents_update("gh-pages", W, message, overwords, DOCSHA, function(e,resp){
 			if(e)return alert("content has been modified someone else, override not allowed, use submit instead");
 			DOCSHA=resp.content.sha;
 			buildTimeline();
@@ -483,6 +487,15 @@ function commentWords(mark){
 	// similar to annotateWords 
 	// load a separate comment file which has a list of datetime/marks/comments that gets inserted into the content (which has contenteditable become false)
 	// the comment file can even sit on another repo for better access control
+}
+
+function setpassWord(){
+	var pass1="hi",pass2="bye";
+	while(pass1!=pass2){
+		pass1=prompt("Password:");
+		pass2=prompt("Reconfirm Password:");
+	};
+	return pass1;
 }
 
 function errorlog(heading,details){
