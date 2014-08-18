@@ -11,11 +11,6 @@
 //  google-diff-match-patch
 // aes.js		https://code.google.com/p/crypto-js/	
 
-function encryption(){
-	//var encrypted = CryptoJS.AES.encrypt("Message", "Secret Passphrase").toString();
-	//CryptoJS.AES.decrypt(encryptedtext,"Secret Passphrase").toString(CryptoJS.enc.Utf8)
-}
-
 function wordsharer(words,options){
 	opt={repairHTML:1,encrypt:false};// defaults
 	for(var o in options){if(options.hasOwnProperty(o))opt[o]=options[o];};
@@ -25,7 +20,7 @@ function wordsharer(words,options){
 
 	if(typeof words=='string'){
 		var urlquery=window.location.search;
-		urlquery="?words="+words+urlquery.replace(/[\?&]words=[^&]+/,'')
+		urlquery="?words="+words+urlquery.replace(/[\?&]words=[^&]+/,'');// put words in front
 		history.pushState(null,null,urlquery);
 	} else words=getParameterByName("words"); // get from url
 	if(words==null || words.length==0){newWords();return;};
@@ -38,7 +33,7 @@ function wordsharer(words,options){
 	opt.encrypt=getParameterByName("encrypt")=='true'?true:opt.encrypt;
 
 	var token=getParameterByName("token");
-	if(typeof token=="string" && offline==null) var gh=new Github({auth:'oauth',token:token});//give personal access to repo, well repo is public anyways
+	if(typeof token=="string" && offline==null) var gh=new Github({auth:'oauth',token:token});// set write access to repo
 	else{
 		var gh=new Github({});
 		getWords=function(W, cb, C){
@@ -452,10 +447,17 @@ function helpWords(){
 }
 
 function newWords(){
-	var urlquery=window.location.search;
-	var words=urlquery.match(/[\?&]words=([^&]+)/);
-	var newWordsform=document.getElementById("newWordsform");
+
+	var token=getParameterByName("token");
+	if(token==null){
+		token=prompt('Need write access token to create new words');
+		if(token==null)alert("The words will be readonly");
+		else history.pushState(null,null,window.location.search+"&token="+token);
+	};
+
 	var newWordsinput=document.getElementById("newWordsinput");
+
+	var words=getParameterByName("words");
 	newWordsinput.value=words?words[1]:"why";
 	newWordsinput.style.display="block";
 	newWordsinput.focus();
