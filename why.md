@@ -1,6 +1,6 @@
 <p></p><p></p><p></p><p></p><h1>Why?</h1><p></p><p></p><p></p>
 <p></p><p></p><p></p><p>The problem I have with blogging or publishing my ideas are three folds, and they kinda feed into each other:</p><p><br></p><p></p><p></p><p></p>
-<p></p><p></p><p></p><p><strong>Speed</strong> - from writing down the idea, reformatting, rewording, going thur the iterations as quickly as possible </p><p></p><p></p><p></p>
+<p></p><p></p><p></p><p><strong>Speed</strong> - from writing down the idea, reformatting, rewording, going thur the iterations as quickly as possible<ins datetime="2014-08-18T03:48:01.241Z">, getting out of the way and encourage putting words down</ins><wbr> </p><p></p><p></p><p></p>
 <p></p><p></p><p></p><p><strong>Conciseness</strong> - quality of the writing, does the writing convey the idea properly, easy to understand, keeps people reading</p><p></p><p></p><p></p>
 <p></p><p></p><p></p><p><strong>Propagation</strong> - how to get the idea to the right audience, going thur the network</p><p><br></p><p></p><p></p><p></p>
 <p></p><p></p><p></p><p>In another word, going from raw idea to something I can share/blog as fast as possible and not embarrass myself. <br></p><p><br></p><p>Kinda
