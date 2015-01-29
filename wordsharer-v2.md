@@ -2,6 +2,12 @@
 
 Looks like [Prose](Prose.io "Prose") already has most of the features I want to create for the editor + github content management. It's using [CodeMirror](CodeMirror.net "CodeMirror") editor which is fast and already well developed.
 
+Notes on Prose
+- start with boot.js
+  - starts the user model and authenication
+- Prose is mainly composed of backbone + codemirror, with backbone handling the UI
+- 
+
 There is www.penflip.com which a fork of prose, and it's already charging for use.  It's also having difficulties figuring out the comment situation.  But it seems to have the pull/push mechanism figured out.  And the sharing part.  There is some hint of the propagtion part which they call discover.
 
 Let's integrate Prose into wordsharer and work on the 'propagation' mandate.
@@ -20,11 +26,21 @@ Here are some features which should be added to prose to make it a wordsharer ed
       - addwidget can give precise location
         - [ ] make the widget above line and have a small logo
       - linewidget allow longer annotation that doesn't block
+
+Maybe the question is markup annotation vs html annotation?  The model should follow how people edit articles, they use a red marker and circle the issue and write a small explaination on the side.
+
+~~this is to be deleleted~~ // because it is just an example //
+
+Comments are a little different.
+
+Maybe in the editor when you delete, the 
+
 - [ ] ** update highlight **
   - prose has a showdiff method which is used to show changes before commit
   - [ ] borrow this and allow showing diffs between commits
   - [ ] find out the last commit of this user as the original text
 - [ ] vim keymap
+- [ ] local storage for offline/disconnect recovery
 
 ## Propagation
 
