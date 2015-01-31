@@ -3,10 +3,11 @@
 Looks like [Prose](Prose.io "Prose") already has most of the features I want to create for the editor + github content management. It's using [CodeMirror](CodeMirror.net "CodeMirror") editor which is fast and already well developed.
 
 Notes on Prose
+- Prose is mainly composed of backbone + codemirror, with backbone handling the UI with Model View Controller design
+- view starts with app/views/start.js which creates user authentication page
 - start with boot.js
   - starts the user model and authenication
-- Prose is mainly composed of backbone + codemirror, with backbone handling the UI
-- 
+- server is really simple, 
 
 There is www.penflip.com which a fork of prose, and it's already charging for use.  It's also having difficulties figuring out the comment situation.  But it seems to have the pull/push mechanism figured out.  And the sharing part.  There is some hint of the propagtion part which they call discover.
 
@@ -19,7 +20,7 @@ Here are some features which should be added to prose to make it a wordsharer ed
     - removed when preview
     - option to remove when share/publish
   - are only made within edit mode
-  - [ ] create markdown sytnax // for edit notes //
+  - [ ] create markdown sytnax // explain // whenever the delete key is pressed, so that the edit note is at the spot where the delete occurs, listen to delete keypress with codemirror 
 - [ ] ** comments **
   - [ ] use marktext method to create comment mark in preview mode
     - [ ] use widget (not gutter) to add comment bubble
@@ -55,4 +56,3 @@ Let people share their words with whom they choose, like email.
 Once a word is shared, any updates notifies sharees.
 
 Publish button.
-
