@@ -22,11 +22,15 @@ Here are some features which should be added to prose to make it a wordsharer ed
   - are only made within edit mode
   - [ ] create markdown sytnax // explain // whenever the delete key is pressed, so that the edit note is at the spot where the delete occurs, listen to delete keypress with codemirror 
 - [ ] ** comments **
-  - [ ] use marktext method to create comment mark in preview mode
-    - [ ] use widget (not gutter) to add comment bubble
-      - addwidget can give precise location
-        - [ ] make the widget above line and have a small logo
-      - linewidget allow longer annotation that doesn't block
+  - comments should be stored in a separate file, this keeps the original word intact from modification
+    - how to mark where the comment takes place?  When the document could be updating
+      - if the original document has been modified, then the comment is no longer valid anyways
+      - insert a hidden mark into the original document
+        - [ ] use marktext method to create comment mark in preview mode
+          - [ ] use widget (not gutter) to add comment bubble
+            - addwidget can give precise location
+              - [ ] make the widget above line and have a small logo
+            - linewidget allow longer annotation that doesn't block
 
 Maybe the question is markup annotation vs html annotation?  The model should follow how people edit articles, they use a red marker and circle the issue and write a small explaination on the side.
 
